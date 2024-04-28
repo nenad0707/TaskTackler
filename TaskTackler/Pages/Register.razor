@@ -1,0 +1,59 @@
+﻿@page "/register"
+@using TaskTackler.Services
+@using TaskTackler.Models
+@inject IAuthService AuthService
+@inject NavigationManager NavigationManager
+@attribute [AllowAnonymous]
+
+<h3>Register</h3>
+
+
+<div class="wrapper">
+    <div class="logo">
+        <img src="images/task-logo.png" alt="Task Tackler logo">
+    </div>
+    <div class="text-center mt-4 name">
+        Sign up
+    </div>
+    <EditForm class="p-3 mt-3" Model="registerModel" OnValidSubmit="HandleRegister">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div class="form-field d-flex align-items-center">
+            <i class="far fa-user"></i>
+            <input type="text" name="userName" id="userName" placeholder="Username" @bind-value="registerModel.Username" />
+        </div>
+        <div class="form-field d-flex align-items-center">
+            <i class="fas fa-key"></i>
+            <input id="pwd" @bind-value="registerModel.Password" type="password" placeholder="Password" />
+        </div>
+        <button type="submit" class="btn btn-primary">Log in</button>
+    </EditForm>
+    <div class="text-center mt-3">
+        Already have an account? <a href="/login">Log in</a>.
+    </div>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <div class="alert alert-danger" role="alert">
+        @errorMessage
+    </div>
+}
+
+@code {
+    private RegisterDTO registerModel = new RegisterDTO();
+    private string errorMessage = string.Empty;
+
+    private async Task HandleRegister()
+    {
+        var result = await AuthService.Register(registerModel);
+        if (result.IsSuccess)
+        {
+            NavigationManager.NavigateTo("/login");
+        }
+        else
+        {
+            errorMessage = result.ErrorMessage;
+        }
+    }
+}

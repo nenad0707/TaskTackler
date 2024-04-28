@@ -1,0 +1,71 @@
+﻿@page "/login"
+@using Microsoft.AspNetCore.Components.Authorization
+@using TaskTackler.Models
+@using TaskTackler.Services
+@inject IHttpClientFactory HttpClientFactory
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@attribute [AllowAnonymous]
+
+
+<h3>Login</h3>
+<div class="wrapper">
+    <div class="logo">
+        <img src="images/task-logo.png" alt="Task Tackler logo">
+    </div>
+    <div class="text-center mt-4 name">
+        Log in
+    </div>
+    <EditForm class="p-3 mt-3" Model="@loginModel" OnValidSubmit="HandleLogin">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+            <div class="form-field d-flex align-items-center">
+                <i class="far fa-user"></i>
+            <input type="text" name="userName" id="userName" placeholder="Username" @bind-value="@loginModel.Username" />
+            </div>
+            <div class="form-field d-flex align-items-center">
+                <i class="fas fa-key"></i>
+            <input  id="pwd" @bind-value="loginModel.Password" type="password" placeholder="Password" />
+            </div>
+             <button type="submit" class="btn btn-primary">Log in</button>
+    </EditForm>
+    <div class="text-center mt-3">
+        Don't have an account? <a href="/register">Sign up</a>.
+    </div>
+</div>
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <div class="alert alert-danger" role="alert">
+        @errorMessage
+    </div>
+}
+
+
+
+@code {
+    private LoginDTO loginModel = new LoginDTO();
+    private string errorMessage = string.Empty;
+
+    @inject IAuthService AuthService
+
+    private async Task HandleLogin()
+    {
+        var loginResult = await AuthService.Login(loginModel);
+        if (loginResult.IsSuccess)
+        {
+            await JSRuntime.InvokeVoidAsync("localStorage.setItem", "authToken", loginResult.Token);
+            Console.WriteLine($"Token set: {loginResult.Token}");
+            await ((CustomAuthenticationStateProvider)AuthenticationStateProvider).MarkUserAsAuthenticated(loginResult.Token);
+            NavigationManager.NavigateTo("/");
+        }
+        else
+        {
+            errorMessage = loginResult.ErrorMessage ?? "Login failed. Please check your username and password and try again.";
+        }
+
+    }
+
+
+}
+

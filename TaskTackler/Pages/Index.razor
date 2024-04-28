@@ -1,0 +1,188 @@
+﻿@page "/"
+@using System.Net.Http.Headers
+@using System.Text
+@using System.Text.Json
+@using TaskTackler.Services
+@using TaskTackler.Models
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+@inject ITaskService TaskService
+@inject IAuthService AuthService
+@attribute [Authorize]
+
+<h3>Todo List</h3>
+
+
+<Toasts class="p-3 notification" Messages="messages" AutoHide="true" Delay="6000" Placement="ToastsPlacement.TopRight" />
+
+<EditForm Model="newTodo" OnValidSubmit="AddTask">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <InputText @bind-Value="newTodo.Task" />
+    <InputCheckbox @bind-Value="newTodo.IsCompleted" disabled />
+    <button type="submit" class="btn btn-primary">Add</button>
+</EditForm>
+
+
+@if (todos is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    foreach (var todo in todos)
+    {
+        <EditForm Model="todo" OnValidSubmit="() => SaveChanges(todo)">
+            <InputText @bind-Value="todo.Task" />
+            <InputCheckbox @bind-Value="todo.IsCompleted" disabled="@todo.IsCompleted" @onclick="() => UpdateIsCompleted(todo)" />            <Button Type="ButtonType.Submit" class="btn btn-primary" Color="ButtonColor.Info">Save</Button>
+            <Button Type="ButtonType.Button" class="btn btn-danger" Color="ButtonColor.Danger" @onclick="() => DeleteTask(todo)">Delete</Button>
+        </EditForm>
+    }
+}
+
+
+
+
+@code {
+    private List<TodoModel> todos = new List<TodoModel>();
+    private TodoModel newTodo = new TodoModel();
+    private string errorMessage = string.Empty;
+    List<ToastMessage> messages = new List<ToastMessage>();
+    private bool isFirstRender = true;
+
+    private void ShowMessage(ToastType toastType, string message, string title, string helpText) => messages.Add(CreateToastMessage(toastType, message, title, helpText));
+
+    private ToastMessage CreateToastMessage(ToastType toastType, string message, string title, string helpText)
+      => new ToastMessage
+          {
+              Type = toastType,
+              Title = title,
+              HelpText = helpText,
+              Message = message,
+          };
+
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && isFirstRender)
+        {
+            if (await AuthService.IsAuthenticatedAsync())
+            {
+                todos = await TaskService.GetTodosAsync();
+            }
+            else
+            {
+                NavigationManager.NavigateTo("/login");
+            }
+            isFirstRender = false;
+            StateHasChanged();
+        }
+    }
+
+    /// <summary>
+    /// Saves changes made to a TodoModel instance by calling the UpdateTodoAsync method of the TaskService.
+    /// If the update is successful, it also marks the todo as completed by calling UpdateIsCompleted.
+    /// Displays a toast message indicating the outcome of the operation.
+    /// </summary>
+    /// <param name="todo">The TodoModel instance containing the updated task information.</param>
+    /// <returns>A Task representing the asynchronous operation.</returns>
+    private async Task SaveChanges(TodoModel todo)
+    {
+        var success = await TaskService.UpdateTodoAsync(todo);
+
+        if (success)
+        {
+            ShowMessage(ToastType.Success, "Task saved successfully.", "Todo App", $"Task {todo.Task} saved successfully.");
+        }
+        else
+        {
+            ShowMessage(ToastType.Warning, "Failed to save task.", "Todo App", "Failed to save task.");
+        }
+    }
+
+
+    /// <summary>
+    /// Marks a TodoModel instance as completed by calling the MarkTodoAsCompletedAsync method of the TaskService.
+    /// Logs the outcome of the operation to the console.
+    /// </summary>
+    /// <param name="todo">The TodoModel instance to be marked as completed.</param>
+    /// <returns>A Task representing the asynchronous operation, with no return value.</returns>
+    private async Task UpdateIsCompleted(TodoModel todo)
+    {
+        todo.IsCompleted = true;
+        bool success = await TaskService.MarkTodoAsCompletedAsync(todo);
+
+        Console.WriteLine(success);
+        if (success)
+        {
+            ShowMessage(ToastType.Success, "Task marked as completed.", "Task Update", $"The task {todo.Task} has been successfully marked as completed.");
+
+        }
+        else
+        {
+            ShowMessage(ToastType.Warning, "Failed to mark task as completed.", "Task Update", $"There was a problem marking the task {todo.Task} as completed. Please try again.");
+            todo.IsCompleted = false;
+        }
+    }
+
+    /// <summary>
+    /// Deletes a specified TodoModel instance by calling the DeleteTodoAsync method of the TaskService.
+    /// If the deletion is successful, the todo item is removed from the local list and a success message is displayed.
+    /// Otherwise, a failure message is displayed.
+    /// </summary>
+    /// <param name="todo">The TodoModel instance to be deleted.</param>
+    /// <returns>A Task representing the asynchronous operation.</returns>
+    private async Task DeleteTask(TodoModel todo)
+    {
+        bool success = await TaskService.DeleteTodoAsync(todo);
+        if (success)
+        {
+            todos.Remove(todo);
+            ShowMessage(ToastType.Danger, "Task deleted successfully.", "Todo App", $"Task {todo.Task} has been removed.");
+        }
+        else
+        {
+            ShowMessage(ToastType.Secondary, "Failed to delete task.", "Todo App", "Please try again.");
+        }
+    }
+
+    /// <summary>
+    /// Adds a new task to the todo list. Validates the task input before adding.
+    /// If the task input is not empty, it calls the AddTodoAsync method of the TaskService to add the task.
+    /// Upon successful addition, it refreshes the todo list by retrieving the updated list from the server,
+    /// resets the newTodo model for the next input, and displays a success message.
+    /// If the task addition fails, it displays an error message.
+    /// </summary>
+    private async Task AddTask()
+    {
+        // Check if the new task input is empty or consists only of whitespace
+        if (string.IsNullOrWhiteSpace(newTodo.Task))
+        {
+            errorMessage = "Task cannot be empty.";
+            ShowMessage(ToastType.Warning, errorMessage, "Todo App", $"Task {newTodo.Task} cannot be empty.");
+            return;
+        }
+        newTodo.IsCompleted = false; // Set isCompleted to false for new tasks
+
+        // Attempt to add the new task using the TaskService
+        var success = await TaskService.AddTodoAsync(newTodo);
+
+        if (success)
+        {
+            // Refresh the todo list from the server after successful addition
+            todos = await TaskService.GetTodosAsync();
+
+            // Reset the newTodo model for the next task entry
+            newTodo = new TodoModel();
+            ShowMessage(ToastType.Success, "Task added successfully.", "Todo App", $"Your task {newTodo.Task} has been added to the list.");
+        }
+        else
+        {
+            // Display an error message if the task could not be added
+            ShowMessage(ToastType.Danger, "Failed to add task.", "Todo App", "Failed to add task.");
+        }
+    }
+}
+
+
