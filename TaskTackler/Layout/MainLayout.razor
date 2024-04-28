@@ -1,4 +1,8 @@
-﻿@inherits LayoutComponentBase
+﻿@using System.Security.Claims
+@using System.IdentityModel.Tokens.Jwt
+@inherits LayoutComponentBase
+@inject IJSRuntime JSRuntime
+
 <div class="page">
     <div class="sidebar">
         <NavMenu />
@@ -6,11 +10,43 @@
 
     <main>
         <div class="top-row px-4">
+            <span class="welcome">Welcome,</span> <span class="username">@username</span>
+
+           
             <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
         </div>
-
         <article class="content px-4">
             @Body
         </article>
     </main>
 </div>
+
+@code {
+    private string username = "Guest";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUsername();
+    }
+
+    private async Task LoadUsername()
+    {
+        var token = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "authToken");
+        if (!string.IsNullOrEmpty(token))
+        {
+            var handler = new JwtSecurityTokenHandler();
+            var jsonToken = handler.ReadToken(token);
+            var tokenS = jsonToken as JwtSecurityToken;
+
+            var nameClaim = tokenS!.Claims.FirstOrDefault(claim => claim.Type == "unique_name");
+            username = nameClaim?.Value ?? "Guest";
+
+            StateHasChanged();  // Call this to refresh the UI
+        }
+    }
+
+    protected async override Task OnParametersSetAsync()
+    {
+       await LoadUsername(); // This will ensure username is updated whenever parameters change
+    }
+}

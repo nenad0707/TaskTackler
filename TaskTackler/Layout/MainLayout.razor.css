@@ -1,4 +1,4 @@
-.page {
+﻿.page {
     position: relative;
     display: flex;
     flex-direction: column;
@@ -74,4 +74,13 @@ main {
         padding-left: 2rem !important;
         padding-right: 1.5rem !important;
     }
+}
+
+.welcome {
+    margin-right: 5px;
+    color: black;
+}
+
+.username {
+    color: #0071c1; 
 }

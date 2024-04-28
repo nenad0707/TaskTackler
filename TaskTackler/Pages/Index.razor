@@ -2,6 +2,7 @@
 @using System.Net.Http.Headers
 @using System.Text
 @using System.Text.Json
+@using System.IdentityModel.Tokens.Jwt
 @using TaskTackler.Services
 @using TaskTackler.Models
 @inject IJSRuntime JSRuntime
@@ -13,11 +14,8 @@
 
 <h3>Todo List</h3>
 
-<AuthorizeView>
-    <Authorized>
-        <p>@context.User?.Identity!.Name</p>
-    </Authorized>
-</AuthorizeView>
+
+
 <Toasts class="p-3 notification" Messages="messages" AutoHide="true" Delay="6000" Placement="ToastsPlacement.TopRight" />
 
 <EditForm Model="newTodo" OnValidSubmit="AddTask">
@@ -65,7 +63,6 @@ else
               HelpText = helpText,
               Message = message,
           };
-
 
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
