@@ -18,7 +18,7 @@ public class CustomAuthenticationStateProvider : AuthenticationStateProvider
 
     public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
-        var authToken = await _jsRuntime.InvokeAsync<string>("localStorage.getItem", "authToken");
+        var authToken = await _authService.GetTokenAsync();
         ClaimsIdentity identity = new ClaimsIdentity();
 
         if (!string.IsNullOrEmpty(authToken))
@@ -47,13 +47,14 @@ public class CustomAuthenticationStateProvider : AuthenticationStateProvider
 
     public async Task MarkUserAsAuthenticated(string token)
     {
-        await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "authToken", token);
-        NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
+        var authState = await GetAuthenticationStateAsync();
+        NotifyAuthenticationStateChanged(Task.FromResult(authState));
     }
 
     public async Task MarkUserAsLoggedOut()
     {
-        await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", "authToken");
-        NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
+        await _authService.Logout();
+        var authState = await GetAuthenticationStateAsync();
+        NotifyAuthenticationStateChanged(Task.FromResult(authState));
     }
 }

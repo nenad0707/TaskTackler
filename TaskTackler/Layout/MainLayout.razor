@@ -1,7 +1,10 @@
 ﻿@using System.Security.Claims
 @using System.IdentityModel.Tokens.Jwt
+@using TaskTackler.Services
 @inherits LayoutComponentBase
 @inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <div class="page">
     <div class="sidebar">
@@ -12,8 +15,13 @@
         <div class="top-row px-4">
             <span class="welcome">Welcome,</span> <span class="username">@username</span>
 
+           <AuthorizeView>
+               <Authorized>
+                    <a href="logout" @onclick="Logout">Logout</a>
+               </Authorized>
+           </AuthorizeView>
+          
            
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
         </div>
         <article class="content px-4">
             @Body
@@ -31,22 +39,35 @@
 
     private async Task LoadUsername()
     {
-        var token = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "authToken");
-        if (!string.IsNullOrEmpty(token))
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity!.IsAuthenticated)
         {
-            var handler = new JwtSecurityTokenHandler();
-            var jsonToken = handler.ReadToken(token);
-            var tokenS = jsonToken as JwtSecurityToken;
-
-            var nameClaim = tokenS!.Claims.FirstOrDefault(claim => claim.Type == "unique_name");
-            username = nameClaim?.Value ?? "Guest";
-
-            StateHasChanged();  // Call this to refresh the UI
+            username = user.Identity.Name ?? "Guest";
         }
+        else
+        {
+            username = "Guest";
+        }
+
+        StateHasChanged();
+
+
     }
 
     protected async override Task OnParametersSetAsync()
     {
-       await LoadUsername(); // This will ensure username is updated whenever parameters change
+        await LoadUsername(); // This will ensure username is updated whenever parameters change
+    }
+
+    private async Task Logout()
+    {
+
+        var authProvider = (CustomAuthenticationStateProvider)AuthenticationStateProvider;
+
+        await authProvider.MarkUserAsLoggedOut();
+
+        NavigationManager?.NavigateTo("/login", forceLoad: true);
     }
 }
