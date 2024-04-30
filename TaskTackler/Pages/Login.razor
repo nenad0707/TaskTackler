@@ -4,6 +4,7 @@
 @using TaskTackler.Services
 @inject IHttpClientFactory HttpClientFactory
 @inject NavigationManager NavigationManager
+@inject IAuthService AuthService
 @inject IJSRuntime JSRuntime
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @attribute [AllowAnonymous]
@@ -47,8 +48,6 @@
     private LoginDTO loginModel = new LoginDTO();
     private string errorMessage = string.Empty;
 
-    @inject IAuthService AuthService
-
     private async Task HandleLogin()
     {
         var loginResult = await AuthService.Login(loginModel);
@@ -63,7 +62,5 @@
         }
 
     }
-
-
 }
 
