@@ -84,3 +84,9 @@ main {
 .username {
     color: #03A9F4;
 }
+
+.logout {
+    cursor: pointer;
+    color: #03A9F4;
+   
+}

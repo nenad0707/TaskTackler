@@ -2,7 +2,7 @@
 @using System.IdentityModel.Tokens.Jwt
 @using TaskTackler.Services
 @inherits LayoutComponentBase
-@inject IJSRuntime JSRuntime
+@inject IAuthService AuthService
 @inject NavigationManager NavigationManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
@@ -17,7 +17,7 @@
 
            <AuthorizeView>
                <Authorized>
-                    <a href="logout" @onclick="Logout">Logout</a>
+                    <a class="logout" @onclick="Logout" title="Logout from the application">Logout</a>
                </Authorized>
            </AuthorizeView>
           
@@ -63,11 +63,13 @@
 
     private async Task Logout()
     {
-
+        await AuthService.Logout();
+        
         var authProvider = (CustomAuthenticationStateProvider)AuthenticationStateProvider;
 
         await authProvider.MarkUserAsLoggedOut();
+       
 
-        NavigationManager?.NavigateTo("/login", forceLoad: true);
+        NavigationManager?.NavigateTo("login");
     }
 }
