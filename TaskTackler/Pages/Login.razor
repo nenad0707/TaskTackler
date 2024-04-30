@@ -54,8 +54,6 @@
         var loginResult = await AuthService.Login(loginModel);
         if (loginResult.IsSuccess)
         {
-            await JSRuntime.InvokeVoidAsync("localStorage.setItem", "authToken", loginResult.Token);
-            Console.WriteLine($"Token set: {loginResult.Token}");
             await ((CustomAuthenticationStateProvider)AuthenticationStateProvider).MarkUserAsAuthenticated(loginResult.Token);
             NavigationManager.NavigateTo("/");
         }
