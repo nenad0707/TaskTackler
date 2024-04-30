@@ -20,11 +20,11 @@
         <ValidationSummary />
         <div class="form-field d-flex align-items-center">
             <i class="far fa-user"></i>
-            <input type="text" name="userName" id="userName" placeholder="Username" @bind-value="registerModel.Username" />
+            <input type="text" name="userName" id="userName" placeholder="Username" @bind-value="registerModel.Username" @bind-value:event="oninput" />
         </div>
         <div class="form-field d-flex align-items-center">
             <i class="fas fa-key"></i>
-            <input id="pwd" @bind-value="registerModel.Password" type="password" placeholder="Password" />
+            <input id="pwd" @bind-value="registerModel.Password" type="password" placeholder="Password" @bind-value:event="oninput" />
         </div>
         <button type="submit" class="btn btn-primary">Sign up</button>
     </EditForm>

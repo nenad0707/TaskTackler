@@ -12,6 +12,7 @@ public class LoginDTO
     /// Gets or sets the username.
     /// </summary>
     [Required(ErrorMessage = "Username is required")]
+    [StringLength(100, ErrorMessage = "Username must be between 5 and 100 characters", MinimumLength = 5)]
     public string? Username { get; set; }
 
     /// <summary>
@@ -19,5 +20,6 @@ public class LoginDTO
     /// </summary>
     [Required(ErrorMessage = "Password is required")]
     [DataType(DataType.Password)]
+    [StringLength(100, ErrorMessage = "Password must be between 5 and 100 characters", MinimumLength = 5)]
     public string? Password { get; set; }
 }
