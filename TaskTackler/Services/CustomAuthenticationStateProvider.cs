@@ -7,12 +7,10 @@ namespace TaskTackler.Services;
 
 public class CustomAuthenticationStateProvider : AuthenticationStateProvider
 {
-    private readonly IJSRuntime _jsRuntime;
     private readonly IAuthService _authService;
 
-    public CustomAuthenticationStateProvider(IJSRuntime jsRuntime, IAuthService authService)
+    public CustomAuthenticationStateProvider( IAuthService authService)
     {
-        _jsRuntime = jsRuntime;
         _authService = authService;
     }
 
@@ -47,6 +45,7 @@ public class CustomAuthenticationStateProvider : AuthenticationStateProvider
 
     public async Task MarkUserAsAuthenticated(string token)
     {
+        await _authService.SetTokenAsync(token);
         var authState = await GetAuthenticationStateAsync();
         NotifyAuthenticationStateChanged(Task.FromResult(authState));
     }
