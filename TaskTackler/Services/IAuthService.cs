@@ -10,4 +10,6 @@ public interface IAuthService
     Task<bool> IsAuthenticatedAsync();
     Task<string> GetTokenAsync();
     Task<RegisterResult> Register(RegisterDTO registerModel);
+    Task RemoveTokenAsync();
+    Task SetTokenAsync(string token);
 }

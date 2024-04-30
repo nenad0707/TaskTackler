@@ -23,7 +23,7 @@ public class AuthService : IAuthService
             var tokenResponse = await response.Content.ReadFromJsonAsync<TokenModel>();
             if (tokenResponse?.Token != null)
             {
-                await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "authToken", tokenResponse.Token);
+                await SetTokenAsync(tokenResponse.Token);
                 return new LoginResult { IsSuccess = true, Token = tokenResponse.Token };
             }
         }
@@ -32,7 +32,7 @@ public class AuthService : IAuthService
 
     public async Task Logout()
     {
-        await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", "authToken");
+        await RemoveTokenAsync();
     }
 
     public async Task<bool> IsAuthenticatedAsync()
@@ -59,5 +59,15 @@ public class AuthService : IAuthService
             var errorResponse = await response.Content.ReadAsStringAsync();
             return new RegisterResult { IsSuccess = false, ErrorMessage = errorResponse };
         }
+    }
+
+    public async Task SetTokenAsync(string token)
+    {
+        await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "authToken", token);
+    }
+
+    public async Task RemoveTokenAsync()
+    {
+        await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", "authToken");
     }
 }
