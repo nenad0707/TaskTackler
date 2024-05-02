@@ -4,8 +4,12 @@
 
 .top-row {
     height: 3.5rem;
-    background-color: rgba(0,0,0,0.4);
+    background-color: rgba(255, 255, 255, 0.95);
 }
+
+    .top-row ::deep a, .top-row ::deep .btn-link {
+        color: #654ea3; 
+    }
 
 .navbar-brand {
     font-size: 1.1rem;
@@ -49,7 +53,7 @@
     }
 
     .nav-item ::deep a {
-        color: #d7d7d7;
+        color: #ffffff;
         border-radius: 4px;
         height: 3rem;
         display: flex;
@@ -57,15 +61,15 @@
         line-height: 3rem;
     }
 
-.nav-item ::deep a.active {
-    background-color: rgba(255,255,255,0.37);
-    color: white;
-}
+        .nav-item ::deep a.active {
+            background-color: #a683e3;
+            color: white;
+        }
 
-.nav-item ::deep a:hover {
-    background-color: rgba(255,255,255,0.1);
-    color: white;
-}
+        .nav-item ::deep a:hover {
+            background-color: #D4CAEE;
+            color: #472A79;
+        }
 
 @media (min-width: 641px) {
     .navbar-toggler {
