@@ -104,3 +104,9 @@ code {
     color: #c02d76;
 }
 
+.app-background {
+    background-color: #e4e9fd;
+    background-image: -webkit-linear-gradient(65deg, #a683e3 50%, #e4e9fd 50%);
+    min-height: 1000px;
+}
+

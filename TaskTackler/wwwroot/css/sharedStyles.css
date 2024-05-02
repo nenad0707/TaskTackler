@@ -16,9 +16,9 @@ body {
     min-height: 500px;
     margin: 80px auto;
     padding: 40px 30px 30px 30px;
-    background-color: #ecf0f3;
+    background-color: #ffffff;
     border-radius: 15px;
-    box-shadow: 13px 13px 20px #cbced1, -13px -13px 20px #fff;
+    box-shadow: 5px 5px 15px rgba(0,0,0,0.2), -5px -5px 15px rgba(255,255,255,0.1);
 }
 
 .logo {
@@ -69,15 +69,15 @@ body {
     box-shadow: none;
     width: 100%;
     height: 40px;
-    background-color: #03A9F4;
+    background-color: #6658D3;
     color: #fff;
     border-radius: 25px;
-    box-shadow: 3px 3px 3px #b1b1b1, -3px -3px 3px #fff;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.2), -2px -2px 5px rgba(255,255,255,0.1);
     letter-spacing: 1.3px;
 }
 
     .wrapper .btn:hover {
-        background-color: #039BE5;
+        background-color: #5548C3;
     }
 
 .wrapper a {
@@ -87,13 +87,17 @@ body {
 }
 
     .wrapper a:hover {
-        color: #039BE5;
+        color: #6658D3;
     }
+
+.wrapper .name, .wrapper .form-field input, .wrapper a {
+    color: #333;  
+}
 
 @media(max-width: 380px) {
     .wrapper {
-        margin: 30px 20px;
-        padding: 40px 15px 15px 15px;
+        margin: 30px auto;
+        padding: 40px 20px;
     }
 }
 .notification {
