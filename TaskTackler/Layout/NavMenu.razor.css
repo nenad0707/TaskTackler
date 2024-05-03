@@ -1,5 +1,10 @@
 .navbar-toggler {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(255, 255, 255, 0.3);
+    border: 1px solid #654ea3;
+}
+
+.navbar-toggler-icon {
+    background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" fill="%23654ea3" viewBox="0 0 30 30"><path stroke="%23654ea3" stroke-width="2" d="M4 7h22M4 15h22M4 23h22"/></svg>');
 }
 
 .top-row {
@@ -13,7 +18,13 @@
 
 .navbar-brand {
     font-size: 1.1rem;
+    color: #654ea3;
+    transition: color 0.3s ease;
 }
+
+    .navbar-brand:hover, .navbar-brand:focus {
+        color: #472A79;
+    }
 
 .bi {
     display: inline-block;
