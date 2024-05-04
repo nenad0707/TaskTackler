@@ -12,19 +12,12 @@
 @inject IAuthService AuthService
 @attribute [Authorize]
 
-<h3>Todo List</h3>
+<h1 class="box" id="heading">Todo List</h1>
 
 
 
 <Toasts class="p-3 notification" Messages="messages" AutoHide="true" Delay="6000" Placement="ToastsPlacement.TopRight" />
 
-<EditForm Model="newTodo" OnValidSubmit="AddTask">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
-    <InputText @bind-Value="newTodo.Task" />
-    <InputCheckbox @bind-Value="newTodo.IsCompleted" disabled />
-    <button type="submit" class="btn btn-primary">Add</button>
-</EditForm>
 
 
 @if (todos is null)
@@ -33,15 +26,39 @@
 }
 else
 {
-    foreach (var todo in todos)
-    {
-        <EditForm Model="todo" OnValidSubmit="() => SaveChanges(todo)">
-            <InputText @bind-Value="todo.Task" />
-            <InputCheckbox @bind-Value="todo.IsCompleted" disabled="@todo.IsCompleted" @onclick="() => UpdateIsCompleted(todo)" />            <Button Type="ButtonType.Submit" class="btn btn-primary" Color="ButtonColor.Info">Save</Button>
-            <Button Type="ButtonType.Button" class="btn btn-danger" Color="ButtonColor.Danger" @onclick="() => DeleteTask(todo)">Delete</Button>
+    <div class="box">
+        @foreach (var todo in todos)
+        {
+
+            <EditForm Model="todo" OnValidSubmit="() => SaveChanges(todo)">
+                <div class="item">
+                    <input type="checkbox" @bind-value="todo.IsCompleted" disabled="@todo.IsCompleted" checked="@todo.IsCompleted" @onclick="() => UpdateIsCompleted(todo)" class="input-checkbox" />
+                    <input @bind="todo.Task" class="input-text" />
+
+                    <!-- Save Button -->
+                    <button type="submit" class="icon-button save" title="Save">
+                        <i class="fas fa-save"></i>
+                    </button>
+
+                    <!-- Delete Button -->
+                    <button type="button" class="icon-button delete" @onclick="() => DeleteTask(todo)" title="Delete">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </EditForm>
+        }
+
+        <EditForm Model="newTodo" OnValidSubmit="AddTask" class="add-task-form">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+            <input @bind-value="newTodo.Task" class="input-text" placeholder="New Item" autocomplete="off" autofocus="true" />
+            <button type="submit" class="add-button">+</button>
         </EditForm>
-    }
+
+    </div>
 }
+
+
 
 
 
@@ -72,7 +89,7 @@ else
             if (await AuthService.IsAuthenticatedAsync())
             {
                 todos = await TaskService.GetTodosAsync();
-                
+
             }
             else
             {
