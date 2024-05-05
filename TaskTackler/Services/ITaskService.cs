@@ -4,8 +4,7 @@ namespace TaskTackler.Services;
 
 public interface ITaskService
 {
-
-    Task<List<TodoModel>> GetTodosAsync();
+    Task<PaginatedResponse<List<TodoModel>>> GetTodosAsync(int pageNumber, int pageSize);
     Task<bool> AddTodoAsync(TodoModel todo);
     Task<bool> UpdateTodoAsync(TodoModel todo);
     Task<bool> DeleteTodoAsync(TodoModel todo);

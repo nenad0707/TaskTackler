@@ -20,14 +20,14 @@
 
 
 
-@if (todos is null)
+@if (todos.Data == null || !todos.Data.Any())
 {
     <p><em>Loading...</em></p>
 }
 else
 {
     <div class="box">
-        @foreach (var todo in todos)
+        @foreach (var todo in todos.Data)
         {
 
             <EditForm Model="todo" OnValidSubmit="() => SaveChanges(todo)">
@@ -55,6 +55,21 @@ else
             <button type="submit" class="add-button">+</button>
         </EditForm>
 
+       
+
+    </div>
+    <div class="box">
+        <div class="pagination-container">
+            <Pagination ActivePageNumber="@currentPage"
+                        TotalPages="@totalPages"
+                        PageChanged="@HandlePageChanged"
+                        DisplayPages="5"
+                        FirstLinkIcon="IconName.ChevronDoubleLeft"
+                        PreviousLinkIcon="IconName.ChevronLeft"
+                        NextLinkIcon="IconName.ChevronRight"
+                        LastLinkIcon="IconName.ChevronDoubleRight"
+                        class="pagination-link" />
+        </div>
     </div>
 }
 
@@ -64,9 +79,18 @@ else
 
 
 @code {
-    private List<TodoModel> todos = new List<TodoModel>();
+    private PaginatedResponse<List<TodoModel>> todos = new PaginatedResponse<List<TodoModel>>
+    {
+        Data = new List<TodoModel>(),
+        TotalPages = 0,
+        CurrentPage = 1,
+        PageSize = 5
+    };
+
     private TodoModel newTodo = new TodoModel();
     private string errorMessage = string.Empty;
+    private int currentPage = 1;
+    private int totalPages = 1;
     List<ToastMessage> messages = new List<ToastMessage>();
     private bool isFirstRender = true;
 
@@ -81,6 +105,25 @@ else
               Message = message,
           };
 
+    private async Task HandlePageChanged(int newPageNuber)
+    {
+        await LoadTodos(newPageNuber);
+    }
+
+    private async Task LoadTodos(int pageNumber)
+    {
+        var response = await TaskService.GetTodosAsync(pageNumber, 5);
+        if (response.Data is not null && response.Data.Count > 0)
+        {
+            todos = response; 
+            currentPage = pageNumber;
+            totalPages = response.TotalPages;
+        }
+        else
+        {
+            todos.Data?.Clear();
+        }
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -88,7 +131,7 @@ else
         {
             if (await AuthService.IsAuthenticatedAsync())
             {
-                todos = await TaskService.GetTodosAsync();
+                await LoadTodos(1);
 
             }
             else
@@ -158,7 +201,7 @@ else
         bool success = await TaskService.DeleteTodoAsync(todo);
         if (success)
         {
-            todos.Remove(todo);
+            todos.Data?.Remove(todo);
             ShowMessage(ToastType.Danger, "Task deleted successfully.", "Todo App", $"Task {todo.Task} has been removed.");
         }
         else
@@ -191,7 +234,7 @@ else
         if (success)
         {
             // Refresh the todo list from the server after successful addition
-            todos = await TaskService.GetTodosAsync();
+            await LoadTodos(currentPage);
 
             // Reset the newTodo model for the next task entry
             newTodo = new TodoModel();

@@ -29,6 +29,7 @@ h1 {
     background: white;
     border-radius: 5px;
     box-shadow: 5px 5px 15px -5px rgba(0, 0, 0, 0.3);
+    /*padding: 20px;*/
 }
 
 #heading {
@@ -36,9 +37,6 @@ h1 {
     text-align: center;
 }
 
-form.edit {
-    display: flex;
-}
 
 .item {
     min-height: 70px;
@@ -79,17 +77,6 @@ p {
     border-width: 0;
 }
 
-
-button.edit {
-    margin-left: 0px;
-    margin-right: 20px;
-    border: none;
-    background: none;
-}
-
-.icon {
-    height: 20px;
-}
 
 .icon-button {
     background: none;
@@ -143,6 +130,36 @@ button.edit {
     cursor: pointer
 }
 
+::deep .pagination-container {
+    display: flex;
+    justify-content: center;
+    padding: 10px 0;
+}
+
+::deep nav .pagination-link {
+    padding: 5px 8px;
+    margin: 0 4px;
+    border-radius: 4px;
+    border: none;
+    color: white;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+
+    ::deep .pagination-link.active {
+        background-color: #7861a5; 
+        color: white;
+        font-size: 1.1em;
+    }
+
+/*::deep .pagination.pagination-link:hover page-item{
+    background-color: #9568ae;
+}*/
+::deep ul > .pagination pagination-link {
+    justify-items: stretch;
+   color: #a683e3
+}
 
 
 

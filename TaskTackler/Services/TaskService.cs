@@ -15,17 +15,32 @@ public class TaskService : ITaskService
         _httpClient = httpClientFactory.CreateClient("api");
     }
 
-    public async Task<List<TodoModel>> GetTodosAsync()
+    public async Task<PaginatedResponse<List<TodoModel>>> GetTodosAsync(int pageNumber, int pageSize)
     {
-        var token = await _authService.GetTokenAsync();
-        var response = await _httpClient.GetAsync("todos");
-        //Console.WriteLine(response.Content);
+        var response = await _httpClient.GetAsync($"todos?pageNumber={pageNumber}&pageSize={pageSize}");
         if (response.IsSuccessStatusCode)
         {
-            return await _httpClient.GetFromJsonAsync<List<TodoModel>>("Todos") ?? new List<TodoModel>();
+            var apiResponse = await response.Content.ReadFromJsonAsync<ApiResponse>();
+            return new PaginatedResponse<List<TodoModel>>
+            {
+                Data = apiResponse.Todos,
+                TotalPages = apiResponse.TotalPages,
+                CurrentPage = pageNumber,
+                PageSize = pageSize
+            };
         }
-        return new List<TodoModel>();
+        return new PaginatedResponse<List<TodoModel>>
+        {
+            Data = new List<TodoModel>(),
+            TotalPages = 0,
+            CurrentPage = pageNumber,
+            PageSize = pageSize
+        };
     }
+
+
+
+
 
     public async Task<bool> AddTodoAsync(TodoModel todo)
     {
@@ -52,7 +67,6 @@ public class TaskService : ITaskService
     {
         var token = await _authService.GetTokenAsync();
         var response = await _httpClient.PutAsJsonAsync<TodoModel>($"Todos/{todo.Id}/Complete", todo);
-        Console.WriteLine(response);
         return response.IsSuccessStatusCode;
     }
 }
