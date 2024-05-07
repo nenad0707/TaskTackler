@@ -77,6 +77,10 @@ p {
     border-width: 0;
 }
 
+    .add-button:hover {
+        background-color: #6658D3
+    }
+
 
 .icon-button {
     background: none;
@@ -160,6 +164,18 @@ p {
     justify-items: stretch;
    color: #a683e3
 }
+
+::deep nav .pagination.pagination-link {
+    max-width: 400px;
+}
+
+::deep .page-item.active .page-link {
+    background-color: #a683e3;
+}
+
+    ::deep .page-item.active .page-link:hover {
+        background-color: #6658D3;
+    }
 
 
 

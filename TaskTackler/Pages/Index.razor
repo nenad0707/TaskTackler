@@ -20,7 +20,7 @@
 
 
 
-@if (todos.Data == null || !todos.Data.Any())
+@if (todos.Data == null)
 {
     <p><em>Loading...</em></p>
 }
@@ -92,7 +92,7 @@ else
     private int currentPage = 1;
     private int totalPages = 1;
     List<ToastMessage> messages = new List<ToastMessage>();
-    private bool isFirstRender = true;
+    // private bool isFirstRender = true;
 
     private void ShowMessage(ToastType toastType, string message, string title, string helpText) => messages.Add(CreateToastMessage(toastType, message, title, helpText));
 
@@ -108,6 +108,7 @@ else
     private async Task HandlePageChanged(int newPageNuber)
     {
         await LoadTodos(newPageNuber);
+        StateHasChanged();
     }
 
     private async Task LoadTodos(int pageNumber)
@@ -118,30 +119,52 @@ else
             todos = response; 
             currentPage = pageNumber;
             totalPages = response.TotalPages;
+            StateHasChanged();
         }
         else
         {
             todos.Data?.Clear();
-        }
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender && isFirstRender)
-        {
-            if (await AuthService.IsAuthenticatedAsync())
-            {
-                await LoadTodos(1);
-
-            }
-            else
-            {
-                NavigationManager.NavigateTo("/login");
-            }
-            isFirstRender = false;
             StateHasChanged();
         }
+
+       
     }
+
+    // protected override async Task OnAfterRenderAsync(bool firstRender)
+    // {
+    //     if (firstRender && isFirstRender)
+    //     {
+    //         if (await AuthService.IsAuthenticatedAsync())
+    //         {
+    //             await LoadTodos(1);
+
+    //         }
+    //         else
+    //         {
+    //             NavigationManager.NavigateTo("/login");
+    //         }
+    //         isFirstRender = false;
+    //         StateHasChanged();
+    //     }
+    // }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (await AuthService.IsAuthenticatedAsync())
+        {
+            var initialLoad = await TaskService.GetTodosAsync(1, 5);
+            totalPages = initialLoad.TotalPages;
+            currentPage = totalPages; // Postavite na poslednju stranicu
+
+            // Učitavanje podataka za poslednju stranicu
+            await LoadTodos(currentPage);
+        }
+        else
+        {
+            NavigationManager.NavigateTo("/login");
+        }
+    }
+
 
     /// <summary>
     /// Saves changes made to a TodoModel instance by calling the UpdateTodoAsync method of the TaskService.
@@ -156,6 +179,9 @@ else
 
         if (success)
         {
+            // Odmah osvežite listu zadataka da reflektujete promene
+            await LoadTodos(currentPage);
+            StateHasChanged(); // Ažurirajte UI da odražava promene
             ShowMessage(ToastType.Success, "Task saved successfully.", "Todo App", $"Task {todo.Task} saved successfully.");
         }
         else
@@ -176,7 +202,7 @@ else
         todo.IsCompleted = true;
         bool success = await TaskService.MarkTodoAsCompletedAsync(todo);
 
-        Console.WriteLine(success);
+
         if (success)
         {
             ShowMessage(ToastType.Success, "Task marked as completed.", "Task Update", $"The task {todo.Task} has been successfully marked as completed.");
@@ -201,7 +227,17 @@ else
         bool success = await TaskService.DeleteTodoAsync(todo);
         if (success)
         {
+            // Potencijalno treba revidirati logiku za osvežavanje ukoliko je obrisan poslednji zadatak na stranici
             todos.Data?.Remove(todo);
+            await LoadTodos(currentPage); // Osvježite trenutnu stranicu
+            if (todos.Data.Count == 0 && currentPage > 1)
+            {
+                // Ako nema više zadataka na trenutnoj stranici i nije prva stranica,
+                // idi na prethodnu stranicu
+                currentPage--;
+                await LoadTodos(currentPage);
+            }
+            StateHasChanged(); // Ažurirajte UI odmah
             ShowMessage(ToastType.Danger, "Task deleted successfully.", "Todo App", $"Task {todo.Task} has been removed.");
         }
         else
@@ -209,6 +245,7 @@ else
             ShowMessage(ToastType.Secondary, "Failed to delete task.", "Todo App", "Please try again.");
         }
     }
+
 
     /// <summary>
     /// Adds a new task to the todo list. Validates the task input before adding.
@@ -219,33 +256,35 @@ else
     /// </summary>
     private async Task AddTask()
     {
-        // Check if the new task input is empty or consists only of whitespace
         if (string.IsNullOrWhiteSpace(newTodo.Task))
         {
             errorMessage = "Task cannot be empty.";
             ShowMessage(ToastType.Warning, errorMessage, "Todo App", $"Task {newTodo.Task} cannot be empty.");
             return;
         }
+
         newTodo.IsCompleted = false; // Set isCompleted to false for new tasks
 
-        // Attempt to add the new task using the TaskService
         var success = await TaskService.AddTodoAsync(newTodo);
 
         if (success)
         {
-            // Refresh the todo list from the server after successful addition
-            await LoadTodos(currentPage);
+            var initialLoad = await TaskService.GetTodosAsync(1, 5); // Get the latest page info
+            totalPages = initialLoad.TotalPages;
+            currentPage = totalPages; // Navigate to the last page where the new task might be
 
-            // Reset the newTodo model for the next task entry
-            newTodo = new TodoModel();
+            await LoadTodos(currentPage); // Load the last page to view the newly added task
+
+            newTodo = new TodoModel(); // Reset the newTodo model for the next task entry
+            StateHasChanged(); // Ensures UI updates immediately after the state changes
             ShowMessage(ToastType.Success, "Task added successfully.", "Todo App", $"Your task {newTodo.Task} has been added to the list.");
         }
         else
         {
-            // Display an error message if the task could not be added
             ShowMessage(ToastType.Danger, "Failed to add task.", "Todo App", "Failed to add task.");
         }
     }
+
 }
 
 
