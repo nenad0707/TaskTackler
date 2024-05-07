@@ -74,10 +74,6 @@ else
 }
 
 
-
-
-
-
 @code {
     private PaginatedResponse<List<TodoModel>> todos = new PaginatedResponse<List<TodoModel>>
     {
@@ -126,10 +122,7 @@ else
             todos.Data?.Clear();
             StateHasChanged();
         }
-
-       
     }
-
 
     protected override async Task OnInitializedAsync()
     {
@@ -137,9 +130,8 @@ else
         {
             var initialLoad = await TaskService.GetTodosAsync(1, 5);
             totalPages = initialLoad.TotalPages;
-            currentPage = totalPages; // Postavite na poslednju stranicu
-
-            // Učitavanje podataka za poslednju stranicu
+            currentPage = totalPages; 
+         
             await LoadTodos(currentPage);
         }
         else
@@ -147,7 +139,6 @@ else
             NavigationManager.NavigateTo("/login");
         }
     }
-
 
     /// <summary>
     /// Saves changes made to a TodoModel instance by calling the UpdateTodoAsync method of the TaskService.
@@ -171,7 +162,6 @@ else
             ShowMessage(ToastType.Warning, "Failed to save task.", "Todo App", "Failed to save task.");
         }
     }
-
 
     /// <summary>
     /// Marks a TodoModel instance as completed by calling the MarkTodoAsCompletedAsync method of the TaskService.
@@ -226,7 +216,6 @@ else
         }
     }
 
-
     /// <summary>
     /// Adds a new task to the todo list. Validates the task input before adding.
     /// If the task input is not empty, it calls the AddTodoAsync method of the TaskService to add the task.
@@ -264,7 +253,6 @@ else
             ShowMessage(ToastType.Danger, "Failed to add task.", "Todo App", "Failed to add task.");
         }
     }
-
 }
 
 
