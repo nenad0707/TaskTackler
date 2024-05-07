@@ -130,23 +130,6 @@ else
        
     }
 
-    // protected override async Task OnAfterRenderAsync(bool firstRender)
-    // {
-    //     if (firstRender && isFirstRender)
-    //     {
-    //         if (await AuthService.IsAuthenticatedAsync())
-    //         {
-    //             await LoadTodos(1);
-
-    //         }
-    //         else
-    //         {
-    //             NavigationManager.NavigateTo("/login");
-    //         }
-    //         isFirstRender = false;
-    //         StateHasChanged();
-    //     }
-    // }
 
     protected override async Task OnInitializedAsync()
     {
@@ -179,9 +162,8 @@ else
 
         if (success)
         {
-            // Odmah osvežite listu zadataka da reflektujete promene
             await LoadTodos(currentPage);
-            StateHasChanged(); // Ažurirajte UI da odražava promene
+            StateHasChanged(); 
             ShowMessage(ToastType.Success, "Task saved successfully.", "Todo App", $"Task {todo.Task} saved successfully.");
         }
         else
@@ -227,17 +209,15 @@ else
         bool success = await TaskService.DeleteTodoAsync(todo);
         if (success)
         {
-            // Potencijalno treba revidirati logiku za osvežavanje ukoliko je obrisan poslednji zadatak na stranici
+            
             todos.Data?.Remove(todo);
-            await LoadTodos(currentPage); // Osvježite trenutnu stranicu
-            if (todos.Data.Count == 0 && currentPage > 1)
+            await LoadTodos(currentPage); 
+            if (todos.Data?.Count == 0 && currentPage > 1)
             {
-                // Ako nema više zadataka na trenutnoj stranici i nije prva stranica,
-                // idi na prethodnu stranicu
                 currentPage--;
                 await LoadTodos(currentPage);
             }
-            StateHasChanged(); // Ažurirajte UI odmah
+            StateHasChanged(); 
             ShowMessage(ToastType.Danger, "Task deleted successfully.", "Todo App", $"Task {todo.Task} has been removed.");
         }
         else
