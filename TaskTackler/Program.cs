@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Microsoft.JSInterop;
 using TaskTackler;
 using TaskTackler.Models;
 using TaskTackler.Services;
@@ -10,12 +11,14 @@ builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddScoped<AuthorizationMessageHandler>();
+builder.Services.AddScoped<CachingHandler>();
 
 
 builder.Services.AddHttpClient("api", client =>
 {
     client.BaseAddress = new Uri("https://localhost:7213/api/");
-}).AddHttpMessageHandler<AuthorizationMessageHandler>();
+}).AddHttpMessageHandler<AuthorizationMessageHandler>()
+.AddHttpMessageHandler<CachingHandler>();
 
 builder.Services.AddScoped<TokenModel>();
 builder.Services.AddScoped<IAuthService, AuthService>();
