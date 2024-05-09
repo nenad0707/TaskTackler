@@ -7,11 +7,9 @@ namespace TaskTackler.Services;
 public class TaskService : ITaskService
 {
     private readonly HttpClient _httpClient;
-    private readonly IAuthService _authService;
 
-    public TaskService(IHttpClientFactory httpClientFactory, IAuthService authService)
+    public TaskService(IHttpClientFactory httpClientFactory)
     {
-        _authService = authService;
         _httpClient = httpClientFactory.CreateClient("api");
     }
 
@@ -23,8 +21,8 @@ public class TaskService : ITaskService
             var apiResponse = await response.Content.ReadFromJsonAsync<ApiResponse>();
             return new PaginatedResponse<List<TodoModel>>
             {
-                Data = apiResponse.Todos,
-                TotalPages = apiResponse.TotalPages,
+                Data = apiResponse?.Todos,
+                TotalPages = apiResponse!.TotalPages,
                 CurrentPage = pageNumber,
                 PageSize = pageSize
             };
@@ -38,34 +36,26 @@ public class TaskService : ITaskService
         };
     }
 
-
-
-
-
     public async Task<bool> AddTodoAsync(TodoModel todo)
     {
-        var token = await _authService.GetTokenAsync();
         var response = await _httpClient.PostAsJsonAsync("Todos", todo.Task);
         return response.IsSuccessStatusCode;
     }
 
     public async Task<bool> UpdateTodoAsync(TodoModel todo)
     {
-        var token = await _authService.GetTokenAsync();
         var response = await _httpClient.PutAsJsonAsync($"Todos/{todo.Id}", todo.Task);
         return response.IsSuccessStatusCode;
     }
 
     public async Task<bool> DeleteTodoAsync(TodoModel todo)
     {
-        var token = await _authService.GetTokenAsync();
         var response = await _httpClient.DeleteAsync($"Todos/{todo.Id}");
         return response.IsSuccessStatusCode;
     }
 
     public async Task<bool> MarkTodoAsCompletedAsync(TodoModel todo)
     {
-        var token = await _authService.GetTokenAsync();
         var response = await _httpClient.PutAsJsonAsync<TodoModel>($"Todos/{todo.Id}/Complete", todo);
         return response.IsSuccessStatusCode;
     }
