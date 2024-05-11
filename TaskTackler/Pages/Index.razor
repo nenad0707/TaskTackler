@@ -10,67 +10,46 @@
 @inject AuthenticationStateProvider Auth
 @inject ITaskService TaskService
 @inject IAuthService AuthService
+@using TaskTackler.Components
 @attribute [Authorize]
 
 <h1 class="box" id="heading">Todo List</h1>
 
 
 
+
+
 <Toasts class="p-3 notification" Messages="messages" AutoHide="true" Delay="6000" Placement="ToastsPlacement.TopRight" />
 
+<div class="box">
+    <TodoList Todos="todos.Data" ToggleCompleted="UpdateIsCompleted" Delete="DeleteTask" Save="SaveChanges" />
 
 
-@if (todos.Data == null)
-{
-    <p><em>Loading...</em></p>
+    <EditForm Model="newTodo" OnValidSubmit="AddTask" class="add-task-form">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <input @bind-value="newTodo.Task" class="input-text" placeholder="New Item" autocomplete="off" autofocus="true" />
+        <button type="submit" class="add-button">+</button>
+    </EditForm>
+
+</div>
+
+
+
+<div class="box">
+    <div class="pagination-container">
+        <Pagination ActivePageNumber="@currentPage"
+                    TotalPages="@totalPages"
+                    PageChanged="@HandlePageChanged"
+                    DisplayPages="5"
+                    FirstLinkIcon="IconName.ChevronDoubleLeft"
+                    PreviousLinkIcon="IconName.ChevronLeft"
+                    NextLinkIcon="IconName.ChevronRight"
+                    LastLinkIcon="IconName.ChevronDoubleRight"
+                    class="pagination-link" />
+    </div>
+</div>
 }
-else
-{
-    <div class="box">
-        @foreach (var todo in todos.Data)
-        {
-
-            <EditForm Model="todo" OnValidSubmit="() => SaveChanges(todo)">
-                <div class="item">
-                    <input type="checkbox" @bind-value="todo.IsCompleted" disabled="@todo.IsCompleted" checked="@todo.IsCompleted" @onclick="() => UpdateIsCompleted(todo)" class="input-checkbox" />
-                    <input @bind="todo.Task" class="input-text" />
-
-                    <!-- Save Button -->
-                    <button type="submit" class="icon-button save" title="Save">
-                        <i class="fas fa-save"></i>
-                    </button>
-
-                    <!-- Delete Button -->
-                    <button type="button" class="icon-button delete" @onclick="() => DeleteTask(todo)" title="Delete">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            </EditForm>
-        }
-
-        <EditForm Model="newTodo" OnValidSubmit="AddTask" class="add-task-form">
-            <DataAnnotationsValidator />
-            <ValidationSummary />
-            <input @bind-value="newTodo.Task" class="input-text" placeholder="New Item" autocomplete="off" autofocus="true" />
-            <button type="submit" class="add-button">+</button>
-        </EditForm>
-
-       
-
-    </div>
-    <div class="box">
-        <div class="pagination-container">
-            <Pagination ActivePageNumber="@currentPage"
-                        TotalPages="@totalPages"
-                        PageChanged="@HandlePageChanged"
-                        DisplayPages="5"
-                        FirstLinkIcon="IconName.ChevronDoubleLeft"
-                        PreviousLinkIcon="IconName.ChevronLeft"
-                        NextLinkIcon="IconName.ChevronRight"
-                        LastLinkIcon="IconName.ChevronDoubleRight"
-                        class="pagination-link" />
-        </div>
-    </div>
 }
 
 
