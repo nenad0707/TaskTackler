@@ -1,7 +1,7 @@
 ﻿using Microsoft.JSInterop;
 using System.Net.Http.Headers;
 
-namespace TaskTackler.Services;
+namespace TaskTackler.Handlers;
 
 public class AuthorizationMessageHandler : DelegatingHandler
 {

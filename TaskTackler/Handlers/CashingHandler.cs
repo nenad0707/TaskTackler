@@ -1,13 +1,13 @@
 ﻿using Microsoft.JSInterop;
 using System.Net.Http.Headers;
 
-namespace TaskTackler.Services
+namespace TaskTackler.Handlers
 {
-    public class CachingHandler : DelegatingHandler
+    public class CashingHandler : DelegatingHandler
     {
         private readonly IJSRuntime _jsRuntime;
 
-        public CachingHandler(IJSRuntime jsRuntime)
+        public CashingHandler(IJSRuntime jsRuntime)
         {
             _jsRuntime = jsRuntime;
         }
@@ -21,18 +21,20 @@ namespace TaskTackler.Services
             };
             request.Headers.CacheControl = cacheControl;
 
-            var etag = await _jsRuntime.InvokeAsync<string>("localStorage.getItem", $"etag-{request.RequestUri}");
+            string uriKey = request.RequestUri!.ToString();
+
+            var etag = await _jsRuntime.InvokeAsync<string>("localStorage.getItem", $"etag-{uriKey}");
 
             if (!string.IsNullOrEmpty(etag))
             {
-                request.Headers.IfNoneMatch.Add(new EntityTagHeaderValue(etag));
+                request.Headers.IfNoneMatch.Add(new EntityTagHeaderValue($"\"{etag}\"", true));
             }
 
             var response = await base.SendAsync(request, cancellationToken);
 
             if (response.Headers.ETag != null)
             {
-                await _jsRuntime.InvokeVoidAsync("localStorage.setItem", $"etag-{request.RequestUri}", response.Headers.ETag.Tag);
+                await _jsRuntime.InvokeVoidAsync("localStorage.setItem", $"etag-{uriKey}", response.Headers.ETag.Tag);
             }
 
             return response;

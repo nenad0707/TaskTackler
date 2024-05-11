@@ -1,16 +1,4 @@
-﻿/*body {
-    display: flex;
-    flex-direction: column;
-    justify-content: stretch;
-    min-height: 95vh;
-}*/
-
-/*main {
-    text-align: center;
-    flex: 1 0 auto;
-}
-*/
-
+﻿
 * {
     margin: 0;
     padding: 0;
@@ -24,12 +12,11 @@ h1 {
 }
 
 .box {
-    max-width: 400px;
+    max-width: 600px;
     margin: 50px auto;
     background: white;
     border-radius: 5px;
     box-shadow: 5px 5px 15px -5px rgba(0, 0, 0, 0.3);
-    /*padding: 20px;*/
 }
 
 #heading {
@@ -54,6 +41,10 @@ h1 {
         margin: 20px;
     }
 
+    .item:hover {
+        background-color: rgba(166, 131, 227, 0.2);
+        transition: background-color 0.3s ease;
+    }
 
 p {
     margin: 0;
@@ -107,13 +98,15 @@ p {
     width: 80%;
     margin: 0;
     padding: 20px 0;
-    font-size: 20px;
     color: #00204a;
     flex: 1 1 auto;
     margin-right: 10px;
     padding-left: 20px;
 }
 
+.input-text {
+    cursor: pointer;
+}
     .input-text:focus {
         outline: none;
         box-shadow: inset 0 -3px 0 0 #a683e3;
@@ -157,9 +150,7 @@ p {
         font-size: 1.1em;
     }
 
-/*::deep .pagination.pagination-link:hover page-item{
-    background-color: #9568ae;
-}*/
+
 ::deep ul > .pagination pagination-link {
     justify-items: stretch;
    color: #a683e3
