@@ -16,27 +16,19 @@
 <h1 class="box" id="heading">Todo List</h1>
 
 
-
-
-
 <Toasts class="p-3 notification" Messages="messages" AutoHide="true" Delay="6000" Placement="ToastsPlacement.TopRight" />
 
 <div class="box">
     <TodoList Todos="todos.Data" ToggleCompleted="UpdateIsCompleted" Delete="DeleteTask" Save="SaveChanges" />
-
-
     <EditForm Model="newTodo" OnValidSubmit="AddTask" class="add-task-form">
         <DataAnnotationsValidator />
         <ValidationSummary />
         <input @bind-value="newTodo.Task" class="input-text" placeholder="New Item" autocomplete="off" autofocus="true" />
         <button type="submit" class="add-button">+</button>
     </EditForm>
+</div>
 
-
-
-
-
-
+<div class="box">
     <div class="pagination-container">
         <Pagination ActivePageNumber="@currentPage"
                     TotalPages="@totalPages"
@@ -48,18 +40,18 @@
                     LastLinkIcon="IconName.ChevronDoubleRight"
                     class="pagination-link" />
     </div>
-    </div>
+</div>
 
 
 
 @code {
     private PaginatedResponse<List<TodoModel>> todos = new PaginatedResponse<List<TodoModel>>
-    {
-        Data = new List<TodoModel>(),
-        TotalPages = 0,
-        CurrentPage = 1,
-        PageSize = 5
-    };
+        {
+            Data = new List<TodoModel>(),
+            TotalPages = 0,
+            CurrentPage = 1,
+            PageSize = 5
+        };
 
     private TodoModel newTodo = new TodoModel();
     private string errorMessage = string.Empty;
@@ -90,7 +82,7 @@
         var response = await TaskService.GetTodosAsync(pageNumber, 5);
         if (response.Data is not null && response.Data.Count > 0)
         {
-            todos = response; 
+            todos = response;
             currentPage = pageNumber;
             totalPages = response.TotalPages;
             StateHasChanged();
@@ -108,8 +100,8 @@
         {
             var initialLoad = await TaskService.GetTodosAsync(1, 5);
             totalPages = initialLoad.TotalPages;
-            currentPage = totalPages; 
-         
+            currentPage = totalPages;
+
             await LoadTodos(currentPage);
         }
         else
@@ -132,7 +124,7 @@
         if (success)
         {
             await LoadTodos(currentPage);
-            StateHasChanged(); 
+            StateHasChanged();
             ShowMessage(ToastType.Success, "Task saved successfully.", "Todo App", $"Task {todo.Task} saved successfully.");
         }
         else
@@ -177,15 +169,15 @@
         bool success = await TaskService.DeleteTodoAsync(todo);
         if (success)
         {
-            
+
             todos.Data?.Remove(todo);
-            await LoadTodos(currentPage); 
+            await LoadTodos(currentPage);
             if (todos.Data?.Count == 0 && currentPage > 1)
             {
                 currentPage--;
                 await LoadTodos(currentPage);
             }
-            StateHasChanged(); 
+            StateHasChanged();
             ShowMessage(ToastType.Danger, "Task deleted successfully.", "Todo App", $"Task {todo.Task} has been removed.");
         }
         else
