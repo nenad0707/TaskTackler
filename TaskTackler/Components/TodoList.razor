@@ -6,14 +6,14 @@
 }
 else
 {
-    <div class="box">
+
         @foreach (var todo in Todos)
         {
             <CascadingValue Value="todo">
                 <TodoItem ToggleCompleted="ToggleCompleted" Delete="Delete" Save="Save" />
             </CascadingValue>
         }
-    </div>
+   
 }
 
 @code {
