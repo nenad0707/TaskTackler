@@ -17,15 +17,19 @@ namespace TaskTackler.Handlers
             string uriKey = request.RequestUri!.ToString();
             Console.WriteLine("[CashingHandler] Sending request.");
 
-            // Provera tipa metode i invalidacija keša za modifikacione operacije
             if (request.Method != HttpMethod.Get)
             {
-                // Brisati ETag iz localStorage
-                await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", $"etag-{uriKey}");
-                Console.WriteLine("[CashingHandler] Cache cleared for modification request.");
+                var keys = await _jsRuntime.InvokeAsync<string[]>("Object.keys", new { prefix = "localStorage" });
+                foreach (var key in keys)
+                {
+                    if (key.StartsWith("etag-https://localhost:7213/api/todos"))
+                    {
+                        await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", key);
+                    }
+                }
+                Console.WriteLine("[CashingHandler] All Todo-related ETags cleared.");
             }
 
-            // Provera da li postoji ETag u localStorage za GET zahteve
             if (request.Method == HttpMethod.Get)
             {
                 var etag = await _jsRuntime.InvokeAsync<string>("localStorage.getItem", $"etag-{uriKey}");
@@ -39,7 +43,7 @@ namespace TaskTackler.Handlers
                     }
                     Console.WriteLine($"[CashingHandler] Using ETag from localStorage: {etag}");
                     request.Headers.IfNoneMatch.Clear();
-                    request.Headers.IfNoneMatch.Add(new EntityTagHeaderValue(etag, false));
+                    request.Headers.IfNoneMatch.Add(new EntityTagHeaderValue(etag,true));
                 }
             }
 
