@@ -20,12 +20,7 @@
 
 <div class="box">
     <TodoList Todos="todos.Data" ToggleCompleted="UpdateIsCompleted" Delete="DeleteTask" Save="SaveChanges" />
-    <EditForm Model="newTodo" OnValidSubmit="AddTask" class="add-task-form">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
-        <input @bind-value="newTodo.Task" class="input-text" placeholder="New Item" autocomplete="off" autofocus="true" />
-        <button type="submit" class="add-button">+</button>
-    </EditForm>
+   <AddTodoForm NewTodo="newTodo"  OnAdd="AddTask"/>
 </div>
 
 <div class="box">
@@ -58,7 +53,7 @@
     private int currentPage = 1;
     private int totalPages = 1;
     List<ToastMessage> messages = new List<ToastMessage>();
-    // private bool isFirstRender = true;
+   
 
     private void ShowMessage(ToastType toastType, string message, string title, string helpText) => messages.Add(CreateToastMessage(toastType, message, title, helpText));
 

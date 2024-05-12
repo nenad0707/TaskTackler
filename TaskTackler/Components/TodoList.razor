@@ -6,14 +6,12 @@
 }
 else
 {
-
-        @foreach (var todo in Todos)
-        {
-            <CascadingValue Value="todo">
-                <TodoItem ToggleCompleted="ToggleCompleted" Delete="Delete" Save="Save" />
-            </CascadingValue>
-        }
-   
+    @foreach (var todo in Todos)
+    {
+        <CascadingValue Value="todo">
+            <TodoItem ToggleCompleted="ToggleCompleted" Delete="Delete" Save="Save" />
+        </CascadingValue>
+    }
 }
 
 @code {

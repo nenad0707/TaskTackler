@@ -164,9 +164,17 @@ p {
 }
 
 .add-task-form {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px;
     text-align: center;
-    margin: 20px;
 }
+
+    .add-task-form .input-text {
+        flex-grow: 1; 
+        margin-right: 10px;
+    }
 
 .add-button {
     min-height: 50px;

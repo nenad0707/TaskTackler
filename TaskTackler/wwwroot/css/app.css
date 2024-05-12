@@ -111,7 +111,7 @@ code {
 }
 
 
-* {
+/** {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
@@ -157,8 +157,8 @@ h1 {
         background-color: rgba(166, 131, 227, 0.2);
         transition: background-color 0.3s ease;
     }
-
-p {
+*/
+/*p {
     margin: 0;
     padding: 20px 0;
     font-size: 20px;
@@ -239,7 +239,7 @@ p {
     margin-right: 10px;
     cursor: pointer
 }
-
+*/
 /*::deep .pagination-container {
     display: flex;
     justify-content: center;
