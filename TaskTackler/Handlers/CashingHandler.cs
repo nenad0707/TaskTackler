@@ -31,9 +31,13 @@ namespace TaskTackler.Handlers
                 var etag = await _jsRuntime.InvokeAsync<string>("localStorage.getItem", $"etag-{uriKey}");
                 if (!string.IsNullOrEmpty(etag))
                 {
-                    etag = etag.Trim('\"'); // Uklanjanje navodnika ako već postoje
-                    request.Headers.IfNoneMatch.Add(new EntityTagHeaderValue($"\"{etag}\"", false));
-                    Console.WriteLine($"[CashingHandler] ETag from localStorage: \"{etag}\"");
+                    // Ensure ETag is formatted correctly by removing any weak ETag prefix and wrapping in quotes
+                    etag = etag.Replace("W/", "").Trim();
+                    if (!etag.StartsWith("\""))
+                    {
+                        etag = $"\"{etag}\"";
+                    }
+                    request.Headers.IfNoneMatch.Add(new EntityTagHeaderValue(etag, false));
                 }
             }
 
