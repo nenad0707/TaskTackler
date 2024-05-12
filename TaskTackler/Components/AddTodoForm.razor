@@ -4,7 +4,7 @@
     <DataAnnotationsValidator />
     <ValidationSummary />
     <input @bind-value="NewTodo.Task" class="input-text" placeholder="New Item" autocomplete="off" autofocus="true" />
-    <button type="submit" class="add-button">+</button>
+    <button type="submit" class="add-button" title="Add">+</button>
 </EditForm>
 @code {
     [Parameter] public EventCallback<TodoModel> OnAdd { get; set; }
