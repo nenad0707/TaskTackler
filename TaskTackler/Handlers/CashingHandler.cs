@@ -37,6 +37,8 @@ namespace TaskTackler.Handlers
                     {
                         etag = $"\"{etag}\"";
                     }
+                    Console.WriteLine($"[CashingHandler] Using ETag from localStorage: {etag}");
+                    request.Headers.IfNoneMatch.Clear();
                     request.Headers.IfNoneMatch.Add(new EntityTagHeaderValue(etag, false));
                 }
             }
@@ -47,8 +49,13 @@ namespace TaskTackler.Handlers
             // Sačuvati novi ETag u localStorage ako je dostupan
             if (response.Headers.ETag != null && request.Method == HttpMethod.Get)
             {
-                await _jsRuntime.InvokeVoidAsync("localStorage.setItem", $"etag-{uriKey}", response.Headers.ETag.Tag);
-                Console.WriteLine($"[CashingHandler] ETag saved: {response.Headers.ETag.Tag}");
+                var formattedETag = response.Headers.ETag.Tag;
+                if (!formattedETag.StartsWith("\""))
+                {
+                    formattedETag = $"\"{formattedETag}\"";
+                }
+                await _jsRuntime.InvokeVoidAsync("localStorage.setItem", $"etag-{uriKey}", formattedETag);
+                Console.WriteLine($"[CashingHandler] ETag saved: {formattedETag}");
             }
 
             return response;
