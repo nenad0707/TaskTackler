@@ -26,14 +26,12 @@ public class CashingHandler : DelegatingHandler
         string uriKey = TaskService.GenerateUriKey(pageNumber, pageSize);
         Console.WriteLine("[CashingHandler] Sending request.");
 
-        // Brisanje keširanih podataka za POST, PUT i DELETE zahteve
         if (request.Method != HttpMethod.Get)
         {
             await ClearETagAndDataKeysAsync(uriKey);
             Console.WriteLine("[CashingHandler] Specific ETags and data cleared.");
         }
 
-        // Dodavanje ETag zaglavlja za GET zahteve
         if (request.Method == HttpMethod.Get)
         {
             var etag = await _cacheManager.GetItemAsync($"etag-{uriKey}");
@@ -46,14 +44,13 @@ public class CashingHandler : DelegatingHandler
                 }
                 Console.WriteLine($"[CashingHandler] Using ETag from localStorage: {etag}");
                 request.Headers.IfNoneMatch.Clear();
-                request.Headers.IfNoneMatch.Add(new EntityTagHeaderValue(etag, false)); // Set to weak ETag
+                request.Headers.IfNoneMatch.Add(new EntityTagHeaderValue(etag, false));
             }
         }
 
         var response = await base.SendAsync(request, cancellationToken);
         Console.WriteLine("[CashingHandler] Response received.");
 
-        // Čuvanje ETag-a i podataka za uspešne GET zahteve
         if (response.StatusCode == HttpStatusCode.OK && request.Method == HttpMethod.Get)
         {
             var content = await response.Content.ReadAsStringAsync();
@@ -72,7 +69,6 @@ public class CashingHandler : DelegatingHandler
             }
         }
 
-        // Ako je odgovor 304, vraćanje keširanih podataka
         if (response.StatusCode == HttpStatusCode.NotModified && request.Method == HttpMethod.Get)
         {
             var cachedData = await _cacheManager.GetItemAsync($"data-{uriKey}");
