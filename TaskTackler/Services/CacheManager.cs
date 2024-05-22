@@ -31,11 +31,5 @@ public class CacheManager
         await RemoveItemAsync($"etag-{uriKey}");
         await RemoveItemAsync($"data-{uriKey}");
     }
-
-    public async Task<List<string>> GetAllKeysAsync()
-    {
-        var keys = await _jsRuntime.InvokeAsync<string[]>("Object.keys", new { });
-        return keys.ToList();
-    }
 }
 

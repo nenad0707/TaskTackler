@@ -1,6 +1,5 @@
 ﻿using Microsoft.JSInterop;
 using System.Net;
-using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using TaskTackler.Models;
@@ -22,7 +21,7 @@ public class TaskService : ITaskService
 
     public static string GenerateUriKey(int pageNumber, int pageSize)
     {
-        return $"todos?pageNumber={pageNumber}&pageSize={pageSize}";
+        return $"Todos?pageNumber={pageNumber}&pageSize={pageSize}";
     }
 
     public async Task<PaginatedResponse<List<TodoModel>>> GetTodosAsync(int pageNumber, int pageSize)
@@ -73,10 +72,8 @@ public class TaskService : ITaskService
         if (response.IsSuccessStatusCode)
         {
             await ClearCacheForLastPage();
-            // Get total pages after adding the new task
             var latestLoad = await GetTodosAsync(1, 5);
             var totalPages = latestLoad.TotalPages;
-            // Cache the new last page
             await GetTodosAsync(totalPages, 5);
         }
         return response.IsSuccessStatusCode;
@@ -88,7 +85,6 @@ public class TaskService : ITaskService
         if (response.IsSuccessStatusCode)
         {
             await ClearCacheForAffectedPages(todo.Id);
-            // Refresh the current page after updating
             var pageNumber = GetPageNumberForTodoId(todo.Id);
             await GetTodosAsync(pageNumber, 5);
         }
@@ -101,6 +97,20 @@ public class TaskService : ITaskService
         if (response.IsSuccessStatusCode)
         {
             await ClearCacheForAffectedPages(todo.Id);
+
+            var totalPages = await GetTotalPagesAsync();
+            var lastPageUriKey = GenerateUriKey(totalPages, 5);
+            var lastPageData = await _cacheManager.GetItemAsync($"data-{lastPageUriKey}");
+
+            if (!string.IsNullOrEmpty(lastPageData))
+            {
+                var lastPageApiResponse = JsonSerializer.Deserialize<ApiResponse>(lastPageData);
+                if (lastPageApiResponse != null && !lastPageApiResponse.Todos.Any())
+                {
+                    await _cacheManager.RemoveItemAsync($"data-{lastPageUriKey}");
+                    await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", $"etag-{lastPageUriKey}");
+                }
+            }
         }
         return response.IsSuccessStatusCode;
     }
@@ -111,7 +121,6 @@ public class TaskService : ITaskService
         if (response.IsSuccessStatusCode)
         {
             await ClearCacheForAffectedPages(todo.Id);
-            // Refresh the current page after marking as completed
             var pageNumber = GetPageNumberForTodoId(todo.Id);
             await GetTodosAsync(pageNumber, 5);
         }
@@ -120,8 +129,8 @@ public class TaskService : ITaskService
 
     private async Task ClearCacheForAffectedPages(int todoId)
     {
-        const int maxPages = 100; // Maksimalan broj stranica (prilagodite prema potrebi)
-        const int pageSize = 5; // Veličina stranice (prilagodite prema potrebi)
+        const int maxPages = 100;
+        const int pageSize = 5;
 
         for (int pageNumber = 1; pageNumber <= maxPages; pageNumber++)
         {
@@ -135,6 +144,12 @@ public class TaskService : ITaskService
                 {
                     await _cacheManager.RemoveItemAsync($"data-{uriKey}");
                     await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", $"etag-{uriKey}");
+
+                    if (apiResponse.Todos.Count == 1)
+                    {
+                        await _cacheManager.RemoveItemAsync($"data-{uriKey}");
+                        await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", $"etag-{uriKey}");
+                    }
                 }
             }
         }
@@ -162,9 +177,20 @@ public class TaskService : ITaskService
     private int GetPageNumberForTodoId(int todoId)
     {
         const int pageSize = 5;
-        // Pronađite odgovarajući pageNumber za dati todoId (ovo je primer implementacije, može se prilagoditi prema potrebi)
-        // Pretpostavljamo da svaki zadatak ima jedinstveni ID i da se zadaci učitavaju po redosledu ID-a
         int pageNumber = (todoId / pageSize) + 1;
         return pageNumber;
+    }
+
+    public async Task<int> GetTotalPagesAsync()
+    {
+        var response = await _httpClient.GetAsync("Todos?pageNumber=1&pageSize=1"); 
+
+        if (response.IsSuccessStatusCode)
+        {
+            var apiResponse = await response.Content.ReadFromJsonAsync<ApiResponse>();
+            return apiResponse!.TotalPages;
+        }
+
+        return 0;
     }
 }
