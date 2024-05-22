@@ -28,7 +28,7 @@ public class CashingHandler : DelegatingHandler
 
         if (request.Method != HttpMethod.Get)
         {
-            await ClearETagAndDataKeysAsync(uriKey);
+            await _cacheManager.ClearSpecificItemsAsync(uriKey);
             Console.WriteLine("[CashingHandler] Specific ETags and data cleared.");
         }
 
@@ -83,11 +83,5 @@ public class CashingHandler : DelegatingHandler
         }
 
         return response;
-    }
-
-    private async Task ClearETagAndDataKeysAsync(string uriKey)
-    {
-        await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", $"etag-{uriKey}");
-        await _cacheManager.RemoveItemAsync($"data-{uriKey}");
     }
 }

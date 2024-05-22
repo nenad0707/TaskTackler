@@ -71,7 +71,7 @@ public class TaskService : ITaskService
         var response = await _httpClient.PostAsJsonAsync("Todos", todo.Task);
         if (response.IsSuccessStatusCode)
         {
-            await ClearCacheForLastPage();
+            await InvalidateLastPageCacheAsync();
             var latestLoad = await GetTodosAsync(1, 5);
             var totalPages = latestLoad.TotalPages;
             await GetTodosAsync(totalPages, 5);
@@ -84,8 +84,8 @@ public class TaskService : ITaskService
         var response = await _httpClient.PutAsJsonAsync($"Todos/{todo.Id}", todo.Task);
         if (response.IsSuccessStatusCode)
         {
-            await ClearCacheForAffectedPages(todo.Id);
             var pageNumber = GetPageNumberForTodoId(todo.Id);
+            await ClearCacheForPage(pageNumber, 5);
             await GetTodosAsync(pageNumber, 5);
         }
         return response.IsSuccessStatusCode;
@@ -96,16 +96,15 @@ public class TaskService : ITaskService
         var response = await _httpClient.DeleteAsync($"Todos/{todo.Id}");
         if (response.IsSuccessStatusCode)
         {
-            await ClearCacheForAffectedPages(todo.Id);
+            var pageNumber = GetPageNumberForTodoId(todo.Id);
+            await ClearCacheForPage(pageNumber, 5);
 
             var totalPages = await GetTotalPagesAsync();
-            var lastPageUriKey = GenerateUriKey(totalPages, 5);
-            var lastPageData = await _cacheManager.GetItemAsync($"data-{lastPageUriKey}");
-
-            if (!string.IsNullOrEmpty(lastPageData))
+            if (pageNumber == totalPages && totalPages > 1)
             {
-                var lastPageApiResponse = JsonSerializer.Deserialize<ApiResponse>(lastPageData);
-                if (lastPageApiResponse != null && !lastPageApiResponse.Todos.Any())
+                var lastPageUriKey = GenerateUriKey(totalPages, 5);
+                var lastPageData = await _cacheManager.GetItemAsync($"data-{lastPageUriKey}");
+                if (string.IsNullOrEmpty(lastPageData))
                 {
                     await _cacheManager.RemoveItemAsync($"data-{lastPageUriKey}");
                     await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", $"etag-{lastPageUriKey}");
@@ -120,58 +119,19 @@ public class TaskService : ITaskService
         var response = await _httpClient.PutAsJsonAsync<TodoModel>($"Todos/{todo.Id}/Complete", todo);
         if (response.IsSuccessStatusCode)
         {
-            await ClearCacheForAffectedPages(todo.Id);
             var pageNumber = GetPageNumberForTodoId(todo.Id);
+            await ClearCacheForPage(pageNumber, 5);
             await GetTodosAsync(pageNumber, 5);
         }
         return response.IsSuccessStatusCode;
     }
 
-    private async Task ClearCacheForAffectedPages(int todoId)
+    private async Task InvalidateLastPageCacheAsync()
     {
-        const int maxPages = 100;
-        const int pageSize = 5;
-
-        for (int pageNumber = 1; pageNumber <= maxPages; pageNumber++)
-        {
-            var uriKey = GenerateUriKey(pageNumber, pageSize);
-            var cachedData = await _cacheManager.GetItemAsync($"data-{uriKey}");
-
-            if (!string.IsNullOrEmpty(cachedData))
-            {
-                var apiResponse = JsonSerializer.Deserialize<ApiResponse>(cachedData);
-                if (apiResponse != null && apiResponse.Todos.Any(todo => todo.Id == todoId))
-                {
-                    await _cacheManager.RemoveItemAsync($"data-{uriKey}");
-                    await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", $"etag-{uriKey}");
-
-                    if (apiResponse.Todos.Count == 1)
-                    {
-                        await _cacheManager.RemoveItemAsync($"data-{uriKey}");
-                        await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", $"etag-{uriKey}");
-                    }
-                }
-            }
-        }
-    }
-
-    private async Task ClearCacheForLastPage()
-    {
-        const int maxPages = 100;
-        const int pageSize = 5;
-
-        for (int pageNumber = maxPages; pageNumber >= 1; pageNumber--)
-        {
-            var uriKey = GenerateUriKey(pageNumber, pageSize);
-            var cachedData = await _cacheManager.GetItemAsync($"data-{uriKey}");
-
-            if (!string.IsNullOrEmpty(cachedData))
-            {
-                await _cacheManager.RemoveItemAsync($"data-{uriKey}");
-                await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", $"etag-{uriKey}");
-                break;
-            }
-        }
+        var totalPages = await GetTotalPagesAsync();
+        var lastPageUriKey = GenerateUriKey(totalPages, 5);
+        await _cacheManager.RemoveItemAsync($"data-{lastPageUriKey}");
+        await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", $"etag-{lastPageUriKey}");
     }
 
     private int GetPageNumberForTodoId(int todoId)
@@ -183,7 +143,7 @@ public class TaskService : ITaskService
 
     public async Task<int> GetTotalPagesAsync()
     {
-        var response = await _httpClient.GetAsync("Todos?pageNumber=1&pageSize=1"); 
+        var response = await _httpClient.GetAsync("Todos?pageNumber=1&pageSize=1");
 
         if (response.IsSuccessStatusCode)
         {
@@ -192,5 +152,11 @@ public class TaskService : ITaskService
         }
 
         return 0;
+    }
+
+    private async Task ClearCacheForPage(int pageNumber, int pageSize)
+    {
+        var uriKey = GenerateUriKey(pageNumber, pageSize);
+        await _cacheManager.ClearSpecificItemsAsync(uriKey);
     }
 }

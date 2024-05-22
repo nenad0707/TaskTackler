@@ -32,4 +32,3 @@ public class CacheManager
         await RemoveItemAsync($"data-{uriKey}");
     }
 }
-
