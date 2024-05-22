@@ -21,6 +21,7 @@ builder.Services.AddHttpClient("api", client =>
 .AddHttpMessageHandler<CashingHandler>();
 
 builder.Services.AddScoped<TokenModel>();
+builder.Services.AddScoped<CacheManager>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITaskService, TaskService>();
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
