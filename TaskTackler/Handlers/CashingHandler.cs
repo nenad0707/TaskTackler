@@ -17,16 +17,18 @@ namespace TaskTackler.Handlers
             var cacheControl = new CacheControlHeaderValue()
             {
                 NoCache = true
-
             };
             request.Headers.CacheControl = cacheControl;
 
             string uriKey = request.RequestUri!.ToString();
-
             var etag = await _jsRuntime.InvokeAsync<string>("localStorage.getItem", $"etag-{uriKey}");
 
             if (!string.IsNullOrEmpty(etag))
             {
+                if (etag.StartsWith("\"") && etag.EndsWith("\""))
+                {
+                    etag = etag.Substring(1, etag.Length - 2); // Remove leading and trailing quotes
+                }
                 request.Headers.IfNoneMatch.Add(new EntityTagHeaderValue($"\"{etag}\"", true));
             }
 
