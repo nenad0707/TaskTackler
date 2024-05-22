@@ -1,0 +1,43 @@
+﻿@using TaskTackler.Models
+
+
+<EditForm Model="@Todo" OnValidSubmit="HandleValidSubmit">
+    <div class="item">
+        <input type="checkbox" @bind-value="Todo.IsCompleted" disabled="@Todo.IsCompleted" checked="@Todo.IsCompleted" @onclick="ToggleCompletion" class="input-checkbox" />
+        <input @bind="Todo.Task" class="input-text" />
+
+        <!-- Save Button -->
+        <button type="submit" class="icon-button save" title="Save">
+            <i class="fas fa-save"></i>
+        </button>
+
+        <!-- Delete Button -->
+        <button type="button" class="icon-button delete" @onclick="DeleteTask" title="Delete">
+            <i class="fas fa-trash"></i>
+        </button>
+    </div>
+</EditForm>
+
+
+@code {
+    [CascadingParameter] public TodoModel Todo { get; set; } = new();
+    [Parameter] public EventCallback<TodoModel> ToggleCompleted { get; set; }
+    [Parameter] public EventCallback<TodoModel> Delete { get; set; }
+    [Parameter] public EventCallback<TodoModel> Save { get; set; }
+
+    private async Task ToggleCompletion()
+    {
+        Todo.IsCompleted = true;
+        await ToggleCompleted.InvokeAsync(Todo);
+    }
+
+    private async Task DeleteTask()
+    {
+        await Delete.InvokeAsync(Todo);
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        await Save.InvokeAsync(Todo);
+    }
+}

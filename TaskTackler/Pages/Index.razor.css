@@ -1,172 +1,44 @@
 ﻿
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Poppins', sans-serif;
-}
-
-h1 {
-    color: #fff;
-    padding: 10px;
-}
-
-.box {
-    max-width: 600px;
-    margin: 50px auto;
-    background: white;
-    border-radius: 5px;
-    box-shadow: 5px 5px 15px -5px rgba(0, 0, 0, 0.3);
-}
-
-#heading {
-    background-color: #a683e3;
-    text-align: center;
-}
-
-
-.item {
-    min-height: 70px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 1px solid #f1f1f1;
-}
-
-    .item:last-child {
-        border-bottom: 0;
+    ::deep .pagination-container {
+        display: flex;
+        justify-content: center;
+        padding: 10px 0;
     }
 
-    .item input[type="checkbox"] {
-        margin: 20px;
-    }
-
-    .item:hover {
-        background-color: rgba(166, 131, 227, 0.2);
-        transition: background-color 0.3s ease;
-    }
-
-p {
-    margin: 0;
-    padding: 20px 0;
-    font-size: 20px;
-    color: #00204a;
-}
-
-.add-task-form {
-    text-align: center;
-    margin: 20px;
-}
-.add-button {
-    min-height: 50px;
-    width: 50px;
-    border-radius: 50%;
-    border-color: transparent;
-    background-color: #a683e3;
-    color: #fff;
-    font-size: 30px;
-    border-width: 0;
-}
-
-    .add-button:hover {
-        background-color: #6658D3
-    }
-
-
-.icon-button {
-    background: none;
-    border: none;
-    color: #a683e3;
-    cursor: pointer;
-    padding: 10px;
-    font-size: 16px;
-    flex: 0 0 auto;
-  
-}
-
-    .icon-button.save:hover, .icon-button.delete:hover {
-        color: #6658D3; 
-    }
-
-.input-text {
-    text-align: left;
-    height: 60px;
-    border: none;
-    background: transparent;
-    font-size: 20px;
-    font-weight: 200;
-    width: 80%;
-    margin: 0;
-    padding: 20px 0;
-    color: #00204a;
-    flex: 1 1 auto;
-    margin-right: 10px;
-    padding-left: 20px;
-}
-
-.input-text {
-    cursor: pointer;
-}
-    .input-text:focus {
-        outline: none;
-        box-shadow: inset 0 -3px 0 0 #a683e3;
-    }
-
-    .input-text::placeholder {
-        color: lightgray;
-        opacity: 1;
-        text-indent: 20px;
-    }
-
-.input-checkbox {
-    height: 15px;
-    width: 15px;
-    accent-color: #a683e3;
-    flex: 0 0 auto;
-    margin-right: 10px;
-    cursor: pointer
-}
-
-::deep .pagination-container {
-    display: flex;
-    justify-content: center;
-    padding: 10px 0;
-}
-
-::deep nav .pagination-link {
-    padding: 5px 8px;
-    margin: 0 4px;
-    border-radius: 4px;
-    border: none;
-    color: white;
-    font-weight: 500;
-    cursor: pointer;
-}
-
-
-    ::deep .pagination-link.active {
-        background-color: #7861a5; 
+    ::deep nav .pagination-link {
+        padding: 5px 8px;
+        margin: 0 4px;
+        border-radius: 4px;
+        border: none;
         color: white;
-        font-size: 1.1em;
+        font-weight: 500;
+        cursor: pointer;
     }
 
 
-::deep ul > .pagination pagination-link {
-    justify-items: stretch;
-   color: #a683e3
-}
+        ::deep .pagination-link.active {
+            background-color: #7861a5; 
+            color: white;
+            font-size: 1.1em;
+        }
 
-::deep nav .pagination.pagination-link {
-    max-width: 400px;
-}
 
-::deep .page-item.active .page-link {
-    background-color: #a683e3;
-}
-
-    ::deep .page-item.active .page-link:hover {
-        background-color: #6658D3;
+    ::deep ul > .pagination pagination-link {
+        justify-items: stretch;
+       color: #a683e3
     }
+
+    ::deep nav .pagination.pagination-link {
+        max-width: 400px;
+    }
+
+    ::deep .page-item.active .page-link {
+        background-color: #a683e3;
+    }
+
+        ::deep .page-item.active .page-link:hover {
+            background-color: #6658D3;
+        }
 
 
 

@@ -1,0 +1,20 @@
+﻿@using TaskTackler.Models
+
+<EditForm Model="NewTodo" OnValidSubmit="HandleValidSubmit" class="add-task-form">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <input @bind-value="NewTodo.Task" class="input-text" placeholder="New Item" autocomplete="off" autofocus="true" />
+    <button type="submit" class="add-button" title="Add">+</button>
+</EditForm>
+@code {
+    [Parameter] public EventCallback<TodoModel> OnAdd { get; set; }
+    [Parameter] public TodoModel NewTodo { get; set; } = default!; 
+
+    private async Task HandleValidSubmit()
+    {
+        if (!string.IsNullOrWhiteSpace(NewTodo.Task))
+        {
+            await OnAdd.InvokeAsync(NewTodo);
+        }
+    }
+}

@@ -1,0 +1,22 @@
+﻿@using TaskTackler.Models
+
+@if (Todos == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    @foreach (var todo in Todos)
+    {
+        <CascadingValue Value="todo">
+            <TodoItem ToggleCompleted="ToggleCompleted" Delete="Delete" Save="Save" />
+        </CascadingValue>
+    }
+}
+
+@code {
+    [Parameter] public List<TodoModel> Todos { get; set; } = new();
+    [Parameter] public EventCallback<TodoModel> ToggleCompleted { get; set; }
+    [Parameter] public EventCallback<TodoModel> Delete { get; set; }
+    [Parameter] public EventCallback<TodoModel> Save { get; set; }
+}
