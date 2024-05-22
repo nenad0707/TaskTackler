@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using Microsoft.JSInterop;
+using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -10,16 +11,23 @@ public class TaskService : ITaskService
 {
     private readonly HttpClient _httpClient;
     private readonly CacheManager _cacheManager;
+    private readonly IJSRuntime _jsRuntime;
 
-    public TaskService(IHttpClientFactory httpClientFactory, CacheManager cacheManager)
+    public TaskService(IHttpClientFactory httpClientFactory, CacheManager cacheManager, IJSRuntime jsRuntime)
     {
         _httpClient = httpClientFactory.CreateClient("api");
         _cacheManager = cacheManager;
+        _jsRuntime = jsRuntime;
+    }
+
+    public static string GenerateUriKey(int pageNumber, int pageSize)
+    {
+        return $"todos?pageNumber={pageNumber}&pageSize={pageSize}";
     }
 
     public async Task<PaginatedResponse<List<TodoModel>>> GetTodosAsync(int pageNumber, int pageSize)
     {
-        var uriKey = $"todos?pageNumber={pageNumber}&pageSize={pageSize}";
+        var uriKey = GenerateUriKey(pageNumber, pageSize);
         var response = await _httpClient.GetAsync(uriKey);
 
         if (response.StatusCode == HttpStatusCode.OK)
@@ -52,10 +60,10 @@ public class TaskService : ITaskService
 
         return new PaginatedResponse<List<TodoModel>>
         {
-            Data = new List<TodoModel>(), // Prazna lista jer nema podataka
-            TotalPages = 0, // Nema stranica jer nema podataka
-            CurrentPage = pageNumber, // Vraćamo traženi broj stranice
-            PageSize = pageSize // Vraćamo traženu veličinu stranice
+            Data = new List<TodoModel>(),
+            TotalPages = 0,
+            CurrentPage = pageNumber,
+            PageSize = pageSize
         };
     }
 
@@ -65,6 +73,11 @@ public class TaskService : ITaskService
         if (response.IsSuccessStatusCode)
         {
             await ClearCacheForLastPage();
+            // Get total pages after adding the new task
+            var latestLoad = await GetTodosAsync(1, 5);
+            var totalPages = latestLoad.TotalPages;
+            // Cache the new last page
+            await GetTodosAsync(totalPages, 5);
         }
         return response.IsSuccessStatusCode;
     }
@@ -75,6 +88,9 @@ public class TaskService : ITaskService
         if (response.IsSuccessStatusCode)
         {
             await ClearCacheForAffectedPages(todo.Id);
+            // Refresh the current page after updating
+            var pageNumber = GetPageNumberForTodoId(todo.Id);
+            await GetTodosAsync(pageNumber, 5);
         }
         return response.IsSuccessStatusCode;
     }
@@ -95,6 +111,9 @@ public class TaskService : ITaskService
         if (response.IsSuccessStatusCode)
         {
             await ClearCacheForAffectedPages(todo.Id);
+            // Refresh the current page after marking as completed
+            var pageNumber = GetPageNumberForTodoId(todo.Id);
+            await GetTodosAsync(pageNumber, 5);
         }
         return response.IsSuccessStatusCode;
     }
@@ -106,7 +125,7 @@ public class TaskService : ITaskService
 
         for (int pageNumber = 1; pageNumber <= maxPages; pageNumber++)
         {
-            var uriKey = $"todos?pageNumber={pageNumber}&pageSize={pageSize}";
+            var uriKey = GenerateUriKey(pageNumber, pageSize);
             var cachedData = await _cacheManager.GetItemAsync($"data-{uriKey}");
 
             if (!string.IsNullOrEmpty(cachedData))
@@ -114,7 +133,8 @@ public class TaskService : ITaskService
                 var apiResponse = JsonSerializer.Deserialize<ApiResponse>(cachedData);
                 if (apiResponse != null && apiResponse.Todos.Any(todo => todo.Id == todoId))
                 {
-                    await _cacheManager.ClearSpecificItemsAsync(uriKey);
+                    await _cacheManager.RemoveItemAsync($"data-{uriKey}");
+                    await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", $"etag-{uriKey}");
                 }
             }
         }
@@ -127,15 +147,24 @@ public class TaskService : ITaskService
 
         for (int pageNumber = maxPages; pageNumber >= 1; pageNumber--)
         {
-            var uriKey = $"todos?pageNumber={pageNumber}&pageSize={pageSize}";
+            var uriKey = GenerateUriKey(pageNumber, pageSize);
             var cachedData = await _cacheManager.GetItemAsync($"data-{uriKey}");
 
             if (!string.IsNullOrEmpty(cachedData))
             {
-                await _cacheManager.ClearSpecificItemsAsync(uriKey);
+                await _cacheManager.RemoveItemAsync($"data-{uriKey}");
+                await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", $"etag-{uriKey}");
                 break;
             }
         }
     }
-}
 
+    private int GetPageNumberForTodoId(int todoId)
+    {
+        const int pageSize = 5;
+        // Pronađite odgovarajući pageNumber za dati todoId (ovo je primer implementacije, može se prilagoditi prema potrebi)
+        // Pretpostavljamo da svaki zadatak ima jedinstveni ID i da se zadaci učitavaju po redosledu ID-a
+        int pageNumber = (todoId / pageSize) + 1;
+        return pageNumber;
+    }
+}
