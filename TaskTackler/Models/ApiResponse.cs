@@ -2,6 +2,6 @@
 
 public class ApiResponse
 {
-    public List<TodoModel> Todos { get; set; }
+    public List<TodoModel>? Todos { get; set; }
     public int TotalPages { get; set; }
 }
