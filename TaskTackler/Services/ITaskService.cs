@@ -9,8 +9,9 @@ namespace TaskTackler.Services
         Task<PaginatedResponse<List<TodoModel>>> GetTodosAsync(int pageNumber, int pageSize);
         Task<bool> AddTodoAsync(TodoModel todo);
         Task<bool> UpdateTodoAsync(TodoModel todo);
-        Task<(bool IsSuccess, int UpdatedPage)> DeleteTodoAsync(TodoModel todo, int currentPage);
+        Task<bool> DeleteTodoAsync(TodoModel todo);
         Task<bool> MarkTodoAsCompletedAsync(TodoModel todo);
         Task<int> GetTotalPagesAsync();
     }
 }
+

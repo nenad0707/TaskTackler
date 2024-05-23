@@ -89,43 +89,24 @@ namespace TaskTackler.Services
             return response.IsSuccessStatusCode;
         }
 
-        public async Task<(bool IsSuccess, int UpdatedPage)> DeleteTodoAsync(TodoModel todo, int currentPage)
+        public async Task<bool> DeleteTodoAsync(TodoModel todo)
         {
             var response = await _httpClient.DeleteAsync($"Todos/{todo.Id}");
             if (response.IsSuccessStatusCode)
             {
                 await _cacheInvalidationService.ClearCacheForAffectedPages(todo.Id);
+                await _cacheInvalidationService.ClearCacheForLastPage();
 
-                var totalPages = await GetTotalPagesAsync();
-                if (currentPage > totalPages)
-                {
-                    currentPage = totalPages;
-                }
-
-                // Clear cache for the last page if it's empty
-                for (int pageNumber = totalPages; pageNumber > 0; pageNumber--)
-                {
-                    var uriKey = UrlKeyGenerator.GenerateUriKey(pageNumber, 5);
-                    var pageData = await _cacheManager.GetItemAsync($"data-{uriKey}");
-                    if (!string.IsNullOrEmpty(pageData))
-                    {
-                        var apiResponse = JsonSerializer.Deserialize<ApiResponse>(pageData);
-                        if (apiResponse != null && !apiResponse.Todos!.Any())
-                        {
-                            await _cacheManager.RemoveItemAsync($"data-{uriKey}");
-                            await _cacheManager.RemoveItemAsync($"etag-{uriKey}");
-                        }
-                        else
-                        {
-                            break; // Stop once we find a non-empty page
-                        }
-                    }
-                }
-
-                return (true, currentPage);
+                //// Optionally: Fetch and update the totalPages
+                //var totalPages = await GetTotalPagesAsync();
+                //if (totalPages < currentPage)
+                //{
+                //    currentPage = totalPages;
+                //}
             }
-            return (false, currentPage);
+            return response.IsSuccessStatusCode;
         }
+
 
         public async Task<bool> MarkTodoAsCompletedAsync(TodoModel todo)
         {
