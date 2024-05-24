@@ -143,7 +143,7 @@
             bool success = await TaskService.DeleteTodoAsync(todo);
             if (success)
             {
-                await UpdatePaginationAfterDelete();
+                await RecalculatePages();
                 ShowMessage(ToastType.Danger, "Task deleted successfully.", "Todo App", $"Task {todo.Task} has been removed.");
             }
             else
@@ -167,7 +167,7 @@
         var success = await TaskService.AddTodoAsync(newTodo);
         if (success)
         {
-            await UpdatePaginationAfterAdd();
+            await RecalculatePagesAndNavigateToLast();
             newTodo = new TodoModel(); // Reset the newTodo model for the next task entry
             ShowMessage(ToastType.Success, "Task added successfully.", "Todo App", $"Your task {newTodo.Task} has been added to the list.");
         }
@@ -177,12 +177,13 @@
         }
     }
 
-    private async Task UpdatePaginationAfterDelete()
+    private async Task RecalculatePages()
     {
-        var initialLoad = await TaskService.GetTodosAsync(currentPage, todos.PageSize);
+        // Recalculate total pages
+        var initialLoad = await TaskService.GetTodosAsync(1, todos.PageSize);
         totalPages = initialLoad.TotalPages;
 
-        // Ensure currentPage is within valid range
+        // Set current page to the last page if it's greater than total pages
         if (currentPage > totalPages)
         {
             currentPage = totalPages;
@@ -191,8 +192,9 @@
         await LoadTodos(currentPage);
     }
 
-    private async Task UpdatePaginationAfterAdd()
+    private async Task RecalculatePagesAndNavigateToLast()
     {
+        // Recalculate total pages
         var initialLoad = await TaskService.GetTodosAsync(1, todos.PageSize);
         totalPages = initialLoad.TotalPages;
 
