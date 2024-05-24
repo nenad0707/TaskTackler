@@ -15,9 +15,10 @@ builder.Services.AddScoped<AuthorizationMessageHandler>();
 builder.Services.AddScoped<CachingHandler>();
 
 
+var apiUrl = builder.Configuration.GetValue<string>("ApiUrl") ?? "https://localhost:7213/api/";
 builder.Services.AddHttpClient("api", client =>
 {
-    client.BaseAddress = new Uri("https://localhost:7213/api/");
+    client.BaseAddress = new Uri(apiUrl);
 }).AddHttpMessageHandler<AuthorizationMessageHandler>()
 .AddHttpMessageHandler<CachingHandler>();
 
