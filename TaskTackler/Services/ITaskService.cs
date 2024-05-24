@@ -1,17 +1,14 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using TaskTackler.Models;
+﻿using TaskTackler.Models;
 
-namespace TaskTackler.Services
+namespace TaskTackler.Services;
+
+public interface ITaskService
 {
-    public interface ITaskService
-    {
-        Task<PaginatedResponse<List<TodoModel>>> GetTodosAsync(int pageNumber, int pageSize);
-        Task<bool> AddTodoAsync(TodoModel todo);
-        Task<bool> UpdateTodoAsync(TodoModel todo);
-        Task<bool> DeleteTodoAsync(TodoModel todo);
-        Task<bool> MarkTodoAsCompletedAsync(TodoModel todo);
-        Task<int> GetTotalPagesAsync();
-    }
+    Task<PaginatedResponse<List<TodoModel>>> GetTodosAsync(int pageNumber, int pageSize);
+    Task<bool> AddTodoAsync(TodoModel todo);
+    Task<bool> UpdateTodoAsync(TodoModel todo);
+    Task<bool> DeleteTodoAsync(TodoModel todo);
+    Task<bool> MarkTodoAsCompletedAsync(TodoModel todo);
+    Task<int> GetTotalPagesAsync();
 }
 
