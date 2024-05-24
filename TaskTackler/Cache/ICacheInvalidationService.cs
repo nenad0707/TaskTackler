@@ -5,4 +5,5 @@ public interface ICacheInvalidationService
     Task ClearCacheForAffectedPages(int todoId);
     Task ClearCacheForLastPage();
     Task ClearCacheForAllPages();
+    Task ClearCacheForSpecificPage(int pageNumber);
 }
