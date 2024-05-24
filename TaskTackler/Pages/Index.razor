@@ -15,12 +15,11 @@
 
 <h1 class="box" id="heading">Todo List</h1>
 
-
 <Toasts class="p-3 notification" Messages="messages" AutoHide="true" Delay="6000" Placement="ToastsPlacement.TopRight" />
 
 <div class="box">
     <TodoList Todos="todos.Data" ToggleCompleted="UpdateIsCompleted" Delete="DeleteTask" Save="SaveChanges" />
-   <AddTodoForm NewTodo="newTodo"  OnAdd="AddTask"/>
+    <AddTodoForm NewTodo="newTodo" OnAdd="AddTask" />
 </div>
 
 <div class="box">
@@ -37,8 +36,6 @@
     </div>
 </div>
 
-
-
 @code {
     private PaginatedResponse<List<TodoModel>> todos = new PaginatedResponse<List<TodoModel>>
         {
@@ -53,7 +50,6 @@
     private int currentPage = 1;
     private int totalPages = 1;
     List<ToastMessage> messages = new List<ToastMessage>();
-   
 
     private void ShowMessage(ToastType toastType, string message, string title, string helpText) => messages.Add(CreateToastMessage(toastType, message, title, helpText));
 
@@ -66,38 +62,33 @@
               Message = message,
           };
 
-    private async Task HandlePageChanged(int newPageNuber)
+    private async Task HandlePageChanged(int newPageNumber)
     {
-        await LoadTodos(newPageNuber);
-        StateHasChanged();
+        currentPage = newPageNumber;
+        await LoadTodos(currentPage);
     }
 
     private async Task LoadTodos(int pageNumber)
     {
-        var response = await TaskService.GetTodosAsync(pageNumber, 5);
-        if (response.Data is not null && response.Data.Count > 0)
+        var response = await TaskService.GetTodosAsync(pageNumber, todos.PageSize);
+        if (response.Data is not null)
         {
             todos = response;
             currentPage = pageNumber;
             totalPages = response.TotalPages;
-            StateHasChanged();
         }
         else
         {
             todos.Data?.Clear();
-            StateHasChanged();
         }
+        StateHasChanged();
     }
 
     protected override async Task OnInitializedAsync()
     {
         if (await AuthService.IsAuthenticatedAsync())
         {
-            var initialLoad = await TaskService.GetTodosAsync(1, 5);
-            totalPages = initialLoad.TotalPages;
-            currentPage = totalPages;
-
-            await LoadTodos(currentPage);
+            await LoadLastPage();
         }
         else
         {
@@ -105,21 +96,20 @@
         }
     }
 
-    /// <summary>
-    /// Saves changes made to a TodoModel instance by calling the UpdateTodoAsync method of the TaskService.
-    /// If the update is successful, it also marks the todo as completed by calling UpdateIsCompleted.
-    /// Displays a toast message indicating the outcome of the operation.
-    /// </summary>
-    /// <param name="todo">The TodoModel instance containing the updated task information.</param>
-    /// <returns>A Task representing the asynchronous operation.</returns>
+    private async Task LoadLastPage()
+    {
+        var initialLoad = await TaskService.GetTodosAsync(1, todos.PageSize);
+        totalPages = initialLoad.TotalPages;
+        currentPage = totalPages;
+        await LoadTodos(currentPage);
+    }
+
     private async Task SaveChanges(TodoModel todo)
     {
         var success = await TaskService.UpdateTodoAsync(todo);
-
         if (success)
         {
             await LoadTodos(currentPage);
-            StateHasChanged();
             ShowMessage(ToastType.Success, "Task saved successfully.", "Todo App", $"Task {todo.Task} saved successfully.");
         }
         else
@@ -128,66 +118,41 @@
         }
     }
 
-    /// <summary>
-    /// Marks a TodoModel instance as completed by calling the MarkTodoAsCompletedAsync method of the TaskService.
-    /// Logs the outcome of the operation to the console.
-    /// </summary>
-    /// <param name="todo">The TodoModel instance to be marked as completed.</param>
-    /// <returns>A Task representing the asynchronous operation, with no return value.</returns>
     private async Task UpdateIsCompleted(TodoModel todo)
     {
         todo.IsCompleted = true;
         bool success = await TaskService.MarkTodoAsCompletedAsync(todo);
 
-
         if (success)
         {
             ShowMessage(ToastType.Success, "Task marked as completed.", "Task Update", $"The task {todo.Task} has been successfully marked as completed.");
-
         }
         else
         {
             ShowMessage(ToastType.Warning, "Failed to mark task as completed.", "Task Update", $"There was a problem marking the task {todo.Task} as completed. Please try again.");
             todo.IsCompleted = false;
         }
+
+        await LoadTodos(currentPage);
     }
 
-    /// <summary>
-    /// Deletes a specified TodoModel instance by calling the DeleteTodoAsync method of the TaskService.
-    /// If the deletion is successful, the todo item is removed from the local list and a success message is displayed.
-    /// Otherwise, a failure message is displayed.
-    /// </summary>
-    /// <param name="todo">The TodoModel instance to be deleted.</param>
-    /// <returns>A Task representing the asynchronous operation.</returns>
     private async Task DeleteTask(TodoModel todo)
     {
-        bool success = await TaskService.DeleteTodoAsync(todo);
-        if (success)
+        if (todo != null)
         {
-
-            todos.Data?.Remove(todo);
-            await LoadTodos(currentPage);
-            if (todos.Data?.Count == 0 && currentPage > 1)
+            bool success = await TaskService.DeleteTodoAsync(todo);
+            if (success)
             {
-                currentPage--;
-                await LoadTodos(currentPage);
+                await RecalculatePages();
+                ShowMessage(ToastType.Danger, "Task deleted successfully.", "Todo App", $"Task {todo.Task} has been removed.");
             }
-            StateHasChanged();
-            ShowMessage(ToastType.Danger, "Task deleted successfully.", "Todo App", $"Task {todo.Task} has been removed.");
-        }
-        else
-        {
-            ShowMessage(ToastType.Secondary, "Failed to delete task.", "Todo App", "Please try again.");
+            else
+            {
+                ShowMessage(ToastType.Secondary, "Failed to delete task.", "Todo App", "Please try again.");
+            }
         }
     }
 
-    /// <summary>
-    /// Adds a new task to the todo list. Validates the task input before adding.
-    /// If the task input is not empty, it calls the AddTodoAsync method of the TaskService to add the task.
-    /// Upon successful addition, it refreshes the todo list by retrieving the updated list from the server,
-    /// resets the newTodo model for the next input, and displays a success message.
-    /// If the task addition fails, it displays an error message.
-    /// </summary>
     private async Task AddTask()
     {
         if (string.IsNullOrWhiteSpace(newTodo.Task))
@@ -200,17 +165,10 @@
         newTodo.IsCompleted = false; // Set isCompleted to false for new tasks
 
         var success = await TaskService.AddTodoAsync(newTodo);
-
         if (success)
         {
-            var initialLoad = await TaskService.GetTodosAsync(1, 5); // Get the latest page info
-            totalPages = initialLoad.TotalPages;
-            currentPage = totalPages; // Navigate to the last page where the new task might be
-
-            await LoadTodos(currentPage); // Load the last page to view the newly added task
-
+            await RecalculatePagesAndNavigateToLast();
             newTodo = new TodoModel(); // Reset the newTodo model for the next task entry
-            StateHasChanged(); // Ensures UI updates immediately after the state changes
             ShowMessage(ToastType.Success, "Task added successfully.", "Todo App", $"Your task {newTodo.Task} has been added to the list.");
         }
         else
@@ -218,6 +176,31 @@
             ShowMessage(ToastType.Danger, "Failed to add task.", "Todo App", "Failed to add task.");
         }
     }
+
+    private async Task RecalculatePages()
+    {
+        // Recalculate total pages
+        var initialLoad = await TaskService.GetTodosAsync(1, todos.PageSize);
+        totalPages = initialLoad.TotalPages;
+
+        // Set current page to the last page if it's greater than total pages
+        if (currentPage > totalPages)
+        {
+            currentPage = totalPages;
+        }
+
+        await LoadTodos(currentPage);
+    }
+
+    private async Task RecalculatePagesAndNavigateToLast()
+    {
+        // Recalculate total pages
+        var initialLoad = await TaskService.GetTodosAsync(1, todos.PageSize);
+        totalPages = initialLoad.TotalPages;
+
+        // Set current page to the last page
+        currentPage = totalPages;
+
+        await LoadTodos(currentPage);
+    }
 }
-
-

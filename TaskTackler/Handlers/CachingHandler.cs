@@ -1,21 +1,19 @@
-﻿using Microsoft.JSInterop;
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Web;
-using TaskTackler.Services;
+using TaskTackler.Cache;
+using TaskTackler.Helpers;
 
 namespace TaskTackler.Handlers;
 
-public class CashingHandler : DelegatingHandler
+public class CachingHandler : DelegatingHandler
 {
     private readonly CacheManager _cacheManager;
-    private readonly IJSRuntime _jsRuntime;
 
-    public CashingHandler(CacheManager cacheManager, IJSRuntime jsRuntime)
+    public CachingHandler(CacheManager cacheManager)
     {
         _cacheManager = cacheManager;
-        _jsRuntime = jsRuntime;
     }
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -23,13 +21,11 @@ public class CashingHandler : DelegatingHandler
         var queryParams = HttpUtility.ParseQueryString(request.RequestUri!.Query);
         int pageNumber = int.TryParse(queryParams["pageNumber"], out int tempPageNumber) ? tempPageNumber : 1;
         int pageSize = int.TryParse(queryParams["pageSize"], out int tempPageSize) ? tempPageSize : 5;
-        string uriKey = TaskService.GenerateUriKey(pageNumber, pageSize);
-        Console.WriteLine("[CashingHandler] Sending request.");
+        string uriKey = UrlKeyGenerator.GenerateUriKey(pageNumber, pageSize);
 
         if (request.Method != HttpMethod.Get)
         {
-            await ClearETagAndDataKeysAsync(uriKey);
-            Console.WriteLine("[CashingHandler] Specific ETags and data cleared.");
+            await _cacheManager.ClearSpecificItemsAsync(uriKey);
         }
 
         if (request.Method == HttpMethod.Get)
@@ -42,20 +38,17 @@ public class CashingHandler : DelegatingHandler
                 {
                     etag = $"\"{etag}\"";
                 }
-                Console.WriteLine($"[CashingHandler] Using ETag from localStorage: {etag}");
                 request.Headers.IfNoneMatch.Clear();
                 request.Headers.IfNoneMatch.Add(new EntityTagHeaderValue(etag, false));
             }
         }
 
         var response = await base.SendAsync(request, cancellationToken);
-        Console.WriteLine("[CashingHandler] Response received.");
 
         if (response.StatusCode == HttpStatusCode.OK && request.Method == HttpMethod.Get)
         {
             var content = await response.Content.ReadAsStringAsync();
             await _cacheManager.SetItemAsync($"data-{uriKey}", content);
-            Console.WriteLine($"[CashingHandler] Data saved.");
 
             if (response.Headers.ETag != null)
             {
@@ -65,7 +58,6 @@ public class CashingHandler : DelegatingHandler
                     formattedETag = $"\"{formattedETag}\"";
                 }
                 await _cacheManager.SetItemAsync($"etag-{uriKey}", formattedETag);
-                Console.WriteLine($"[CashingHandler] ETag saved: {formattedETag}");
             }
         }
 
@@ -83,11 +75,5 @@ public class CashingHandler : DelegatingHandler
         }
 
         return response;
-    }
-
-    private async Task ClearETagAndDataKeysAsync(string uriKey)
-    {
-        await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", $"etag-{uriKey}");
-        await _cacheManager.RemoveItemAsync($"data-{uriKey}");
     }
 }

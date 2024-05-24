@@ -1,6 +1,7 @@
 ﻿using Microsoft.JSInterop;
+using System.Threading.Tasks;
 
-namespace TaskTackler.Services;
+namespace TaskTackler.Cache;
 
 public class CacheManager
 {
@@ -28,8 +29,9 @@ public class CacheManager
 
     public async Task ClearSpecificItemsAsync(string uriKey)
     {
-        await RemoveItemAsync($"etag-{uriKey}");
-        await RemoveItemAsync($"data-{uriKey}");
+        await Task.WhenAll(
+            RemoveItemAsync($"etag-{uriKey}"),
+            RemoveItemAsync($"data-{uriKey}")
+        );
     }
 }
-
