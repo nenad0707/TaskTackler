@@ -1,11 +1,8 @@
 ﻿using System.Text.Json;
-using TaskTackler.Models;
-using System.Threading.Tasks;
-using System.Linq;
-using TaskTackler.Cache;
 using TaskTackler.Helpers;
+using TaskTackler.Models;
 
-namespace TaskTackler.Services
+namespace TaskTackler.Cache
 {
     public class CacheInvalidationService : ICacheInvalidationService
     {
@@ -23,17 +20,21 @@ namespace TaskTackler.Services
 
             for (int pageNumber = 1; pageNumber <= maxPages; pageNumber++)
             {
-                var uriKey = UrlKeyGenerator.GenerateUriKey(pageNumber, pageSize);
-                var cachedData = await _cacheManager.GetItemAsync($"data-{uriKey}");
+                await ClearCacheIfContainsTodoAsync(pageNumber, pageSize, todoId);
+            }
+        }
 
-                if (!string.IsNullOrEmpty(cachedData))
+        private async Task ClearCacheIfContainsTodoAsync(int pageNumber, int pageSize, int todoId)
+        {
+            var uriKey = UrlKeyGenerator.GenerateUriKey(pageNumber, pageSize);
+            var cachedData = await _cacheManager.GetItemAsync($"data-{uriKey}");
+
+            if (!string.IsNullOrEmpty(cachedData))
+            {
+                var apiResponse = JsonSerializer.Deserialize<ApiResponse>(cachedData);
+                if (apiResponse != null && apiResponse.Todos!.Any(todo => todo.Id == todoId))
                 {
-                    var apiResponse = JsonSerializer.Deserialize<ApiResponse>(cachedData);
-                    if (apiResponse != null && apiResponse.Todos!.Any(todo => todo.Id == todoId))
-                    {
-                        await _cacheManager.RemoveItemAsync($"data-{uriKey}");
-                        await _cacheManager.RemoveItemAsync($"etag-{uriKey}");
-                    }
+                    await _cacheManager.ClearSpecificItemsAsync(uriKey);
                 }
             }
         }
@@ -50,8 +51,7 @@ namespace TaskTackler.Services
 
                 if (!string.IsNullOrEmpty(cachedData))
                 {
-                    await _cacheManager.RemoveItemAsync($"data-{uriKey}");
-                    await _cacheManager.RemoveItemAsync($"etag-{uriKey}");
+                    await _cacheManager.ClearSpecificItemsAsync(uriKey);
                     break;
                 }
             }
