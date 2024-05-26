@@ -2,8 +2,40 @@ version: "3.8"
 
 services:
   tasktacklerapp:
-    image: rnenad/tasktacklerapp:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
       - "8000:80"
     environment:
-      - ApiUrl=http://localhost:7213/api/
+      - ApiUrl=http://localhost:8080/api/
+    depends_on:
+      - todoapi
+
+  todoapi:
+    image: rnenad/todoapi:latest
+    ports:
+      - "8080:80"
+    environment:
+      - Jwt__Key=${Jwt__Key}
+      - Jwt__Issuer=${Jwt__Issuer}
+      - Jwt__Audience=${Jwt__Audience}
+      - ConnectionStrings__Default=${ConnectionStrings__Default}
+    depends_on:
+      - db
+    volumes:
+      - dataprotectkeys:/root/.aspnet/DataProtection-Keys
+
+  db:
+    image: rnenad/mssql-custom:latest
+    environment:
+      SA_PASSWORD: ${DB_SA_PASSWORD}
+      ACCEPT_EULA: ${DB_ACCEPT_EULA}
+    volumes:
+      - mssql_data:/var/opt/mssql
+    ports:
+      - "1433:1433"
+
+volumes:
+  mssql_data:
+  dataprotectkeys:
