@@ -15,26 +15,21 @@ namespace TaskTackler.Cache
 
         public async Task ClearCacheForAffectedPages(int todoId)
         {
-            const int maxPages = 100;
             const int pageSize = 5;
+            const int maxPages = 100;
 
             for (int pageNumber = 1; pageNumber <= maxPages; pageNumber++)
             {
-                await ClearCacheIfContainsTodoAsync(pageNumber, pageSize, todoId);
-            }
-        }
+                var uriKey = UrlKeyGenerator.GenerateUriKey(pageNumber, pageSize);
+                var cachedData = await _cacheManager.GetItemAsync($"data-{uriKey}");
 
-        private async Task ClearCacheIfContainsTodoAsync(int pageNumber, int pageSize, int todoId)
-        {
-            var uriKey = UrlKeyGenerator.GenerateUriKey(pageNumber, pageSize);
-            var cachedData = await _cacheManager.GetItemAsync($"data-{uriKey}");
-
-            if (!string.IsNullOrEmpty(cachedData))
-            {
-                var apiResponse = JsonSerializer.Deserialize<ApiResponse>(cachedData);
-                if (apiResponse != null && apiResponse.Todos!.Any(todo => todo.Id == todoId))
+                if (!string.IsNullOrEmpty(cachedData))
                 {
-                    await _cacheManager.ClearSpecificItemsAsync(uriKey);
+                    var apiResponse = JsonSerializer.Deserialize<ApiResponse>(cachedData);
+                    if (apiResponse != null && apiResponse.Todos!.Any(todo => todo.Id == todoId))
+                    {
+                        await _cacheManager.ClearSpecificItemsAsync(uriKey);
+                    }
                 }
             }
         }
@@ -59,8 +54,8 @@ namespace TaskTackler.Cache
 
         public async Task ClearCacheForAllPages()
         {
-            const int maxPages = 100;
             const int pageSize = 5;
+            const int maxPages = 100;
 
             for (int pageNumber = 1; pageNumber <= maxPages; pageNumber++)
             {
