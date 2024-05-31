@@ -18,8 +18,9 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2021-02-01' = {
     name: skuName
     tier: 'Free'
   }
+  kind: 'Windows'
   properties: {
-    reserved: true
+    reserved: false
   }
 }
 
