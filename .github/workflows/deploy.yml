@@ -1,4 +1,4 @@
-name: Build TaskTacckler app
+name: Build TaskTackler app
 
 on:
   workflow_call:
