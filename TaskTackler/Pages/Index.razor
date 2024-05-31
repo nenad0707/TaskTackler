@@ -168,8 +168,8 @@
         if (success)
         {
             await RecalculatePagesAndNavigateToLast();
-            newTodo = new TodoModel(); // Reset the newTodo model for the next task entry
             ShowMessage(ToastType.Success, "Task added successfully.", "Todo App", $"Your task {newTodo.Task} has been added to the list.");
+            newTodo = new TodoModel(); // Reset the newTodo model for the next task entry
         }
         else
         {
