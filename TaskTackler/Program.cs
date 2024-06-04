@@ -14,8 +14,10 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 builder.Services.AddScoped<AuthorizationMessageHandler>();
 builder.Services.AddScoped<CachingHandler>();
 
+var apiUrl = Environment.GetEnvironmentVariable("ApiUrl")
+             ?? builder.Configuration.GetValue<string>("ApiUrl")
+             ?? "https://localhost:7213/api/";
 
-var apiUrl = builder.Configuration.GetValue<string>("ApiUrl") ?? "https://localhost:7213/api/";
 builder.Services.AddHttpClient("api", client =>
 {
     client.BaseAddress = new Uri(apiUrl);
