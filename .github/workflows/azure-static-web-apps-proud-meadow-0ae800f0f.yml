@@ -21,6 +21,10 @@ jobs:
           lfs: false
       - name: Set up environment variables
         run: echo "ApiUrl=${{ secrets.API_URL }}" >> $GITHUB_ENV
+      - name: Replace API URL in appsettings.json
+        run: |
+          jq '.ApiUrl = env.ApiUrl' TaskTackler/appsettings.json > TaskTackler/appsettings.tmp.json
+          mv TaskTackler/appsettings.tmp.json TaskTackler/appsettings.json
       - name: Build And Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
