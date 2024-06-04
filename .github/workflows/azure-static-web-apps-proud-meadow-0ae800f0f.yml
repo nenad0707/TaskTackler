@@ -21,8 +21,11 @@ jobs:
           lfs: false
       - name: Set up environment variables
         run: echo "ApiUrl=${{ secrets.API_URL }}" >> $GITHUB_ENV
+      - name: Verify appsettings.json exists
+        run: ls -al TaskTackler/appsettings.json
       - name: Replace API URL in appsettings.json
         run: |
+          cat TaskTackler/appsettings.json
           jq '.ApiUrl = env.ApiUrl' TaskTackler/appsettings.json > TaskTackler/appsettings.tmp.json
           mv TaskTackler/appsettings.tmp.json TaskTackler/appsettings.json
       - name: Build And Deploy
@@ -30,20 +33,4 @@ jobs:
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
-          repo_token: ${{ secrets.GITHUB_TOKEN }} # Used for Github integrations (i.e. PR comments)
-          action: "upload"
-          app_location: "./TaskTackler" # App source code path
-          api_location: "Api" # Api source code path - optional
-          output_location: "wwwroot" # Built app content directory - optional
-
-  close_pull_request_job:
-    if: github.event_name == 'pull_request' && github.event.action == 'closed'
-    runs-on: ubuntu-latest
-    name: Close Pull Request Job
-    steps:
-      - name: Close Pull Request
-        id: closepullrequest
-        uses: Azure/static-web-apps-deploy@v1
-        with:
-          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
-          action: "close"
+          repo_token: ${{ secrets.GITHUB_TOKEN }} # Used for Github integrations (i
