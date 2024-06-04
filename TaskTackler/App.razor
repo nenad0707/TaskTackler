@@ -16,10 +16,11 @@
 </CascadingAuthenticationState>
 
 @code {
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         var httpClient = HttpClientFactory.CreateClient("api");
 
-        await PingHelper.PingApiWithRetry(httpClient);
+        // Start the pinging process on a background thread
+        _ = Task.Run(() => PingHelper.PingApiWithRetry(httpClient));
     }
 }

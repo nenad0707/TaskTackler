@@ -18,8 +18,8 @@ public static class PingHelper
 
     public static async Task PingApiWithRetry(HttpClient httpClient)
     {
-        const int maxAttempts = 5;
-        const int delay = 5000; // 5 seconds delay between retries
+        const int maxAttempts = 10; // Increase the number of attempts
+        const int delay = 2000; // Reduce the delay to 2 seconds between retries
 
         for (int attempt = 0; attempt < maxAttempts; attempt++)
         {
