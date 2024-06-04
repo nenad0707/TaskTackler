@@ -1,4 +1,6 @@
-﻿<CascadingAuthenticationState>
+﻿@using TaskTackler.Helpers
+@inject IHttpClientFactory HttpClientFactory
+<CascadingAuthenticationState>
 <Router AppAssembly="@typeof(App).Assembly">
     <Found Context="routeData">
         <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
@@ -12,3 +14,12 @@
     </NotFound>
 </Router>
 </CascadingAuthenticationState>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        var httpClient = HttpClientFactory.CreateClient("api");
+
+        await PingHelper.PingApiWithRetry(httpClient);
+    }
+}
