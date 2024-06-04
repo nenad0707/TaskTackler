@@ -22,15 +22,15 @@ jobs:
       - name: Set up .NET Core
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: "8.0.x"
+          dotnet-version: "8.0.x" # Ili verzija koju koristite
       - name: Restore dependencies
         run: dotnet restore ./TaskTackler
         env:
-          ApiUrl: ${{ secrets.API_URL }}
+          ApiUrl: ${{ secrets.API_URL }} # Osigurajte da je API_URL tajna vrednost postavljena
       - name: Build
         run: dotnet build --configuration Release --no-restore ./TaskTackler
         env:
-          ApiUrl: ${{ secrets.API_URL }}
+          ApiUrl: ${{ secrets.API_URL }} # Dodajte ovu liniju
       - name: Deploy
         uses: Azure/static-web-apps-deploy@v1
         with:
