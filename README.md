@@ -14,7 +14,7 @@
 
 ## 🌐 Live Demo
 
-[![Task Tackler Demo](https://img.shields.io/badge/Task%20Tackler-Live%20Demo-512BD4?style=for-the-badge&logo=microsoft-edge&logoColor=white)](http://your-live-demo-url.com)
+[![Task Tackler Demo](https://img.shields.io/badge/Task%20Tackler-Live%20Demo-512BD4?style=for-the-badge&logo=microsoft-edge&logoColor=white)](https://nenadtara-001-site2.jtempurl.com/) 
 
 > **⚠️ Note:** Registration with a valid email is required to access certain features.
 
