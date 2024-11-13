@@ -1,6 +1,4 @@
-# TaskTacklerApp
-
-[![Publish TaskTackler Docker Image](https://github.com/nenad0707/TaskTackler/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/nenad0707/TaskTackler/actions/workflows/docker-publish.yml)
+[![Azure Static Web Apps CI/CD](https://github.com/nenad0707/TaskTackler/actions/workflows/azure-static-web-apps-green-bay-0d264ad03.yml/badge.svg)](https://github.com/nenad0707/TaskTackler/actions/workflows/azure-static-web-apps-green-bay-0d264ad03.yml)
 
 # 📋 Task Tackler
 
