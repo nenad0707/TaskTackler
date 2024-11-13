@@ -12,9 +12,9 @@
 
 ## 🌐 Live Demo
 
-[![Task Tackler Demo](https://img.shields.io/badge/Task%20Tackler-Live%20Demo-512BD4?style=for-the-badge&logo=microsoft-edge&logoColor=white)](https://nenadtara-001-site2.jtempurl.com/) 
+[![Task Tackler Demo](https://img.shields.io/badge/Task%20Tackler-Live%20Demo-512BD4?style=for-the-badge&logo=microsoft-edge&logoColor=white)](https://nenadtara-001-site2.jtempurl.com/)
 
-> **⚠️ Note:** Registration with a valid email is required to access certain features.
+> **⚠️ Note:** Registration is required to access the features. Please register and login to use the application.
 
 ---
 
@@ -27,9 +27,21 @@
   - [🛠️ Technologies Used](#️-technologies-used)
   - [📂 Project Structure](#-project-structure)
   - [🧩 Key Components](#-key-components)
+    - [🔒 Authentication](#-authentication)
+    - [🗃️ Caching](#️-caching)
+    - [🔄 Pagination](#-pagination)
+    - [📝 User Notifications](#-user-notifications)
+    - [🔄 Additional Components](#-additional-components)
+    - [CSS Isolation](#css-isolation)
   - [🌟 Features in Detail](#-features-in-detail)
+    - [🗃️ Client-Side Caching](#️-client-side-caching)
+    - [🔒 Authentication \& Authorization](#-authentication--authorization)
+    - [🔄 Pagination](#-pagination-1)
+    - [📝 User Notifications](#-user-notifications-1)
   - [🐳 Docker Configuration](#-docker-configuration)
   - [🚀 Deployment with GitHub Actions](#-deployment-with-github-actions)
+    - [Azure Resource Deployment](#azure-resource-deployment)
+    - [Manual Deployment Trigger](#manual-deployment-trigger)
   - [🏃 Running Locally](#-running-locally)
   - [📸 Screenshots](#-screenshots)
   - [📄 License](#-license)
@@ -142,3 +154,14 @@ To run the project locally using Docker Compose:
 ```bash
 docker-compose build
 docker-compose up -d
+```
+
+## 📸 Screenshots
+
+Here are some screenshots of the Task Tackler application:
+
+![Screenshot 1](tasktackler.webp)
+
+## 📄 License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
