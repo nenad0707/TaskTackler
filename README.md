@@ -12,7 +12,7 @@
 
 ## 🌐 Live Demo
 
-[![Task Tackler Demo](https://img.shields.io/badge/Task%20Tackler-Live%20Demo-512BD4?style=for-the-badge&logo=microsoft-edge&logoColor=white)](https://nenadtara-001-site2.jtempurl.com/)
+[![Task Tackler Demo](https://img.shields.io/badge/Task%20Tackler-Live%20Demo-512BD4?style=for-the-badge&logo=microsoft-edge&logoColor=white)](https://rista007-002-site3.atempurl.com/)
 
 > **⚠️ Note:** Registration is required to access the features. Please register and login to use the application.
 
